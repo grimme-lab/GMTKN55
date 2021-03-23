@@ -1,0 +1,126 @@
+#set -ex
+tot=0
+tot1=0
+totnum=0
+totnum1=0
+#18 sets for basic properties and reaction energies for small systems
+for i in W4-11 G21EA G21IP DIPCS10 PA26 SIE4x4 ALKBDE10 YBDE18 AL2X6 HEAVYSB11 NBPRC ALK8 RC21 G2RC
+do
+av=$(cat $i/.average)
+w=$(gawk "BEGIN {print 56.84/$av}")
+num=$(cat $i/.numen)
+en=$(tail -1 $i/.${1}.out | gawk '{print $6}')
+tot1=$(gawk "BEGIN {print $tot1+$num*$w*$en}")
+let totnum1=totnum1+num
+done
+
+#needed for BH76RC
+av=$(cat BH76/.averageRC)
+w=$(gawk "BEGIN {print 56.84/$av}")
+num=$(cat BH76/.numenRC)
+en=$(tail -1 BH76/.${1}_RC.out | gawk '{print $6}')
+tot1=$(gawk "BEGIN {print $tot1+$num*$w*$en}")
+let totnum1=totnum1+num
+
+for i in FH51 TAUT15 DC13
+do
+av=$(cat $i/.average)
+num=$(cat $i/.numen)
+en=$(tail -1 $i/.${1}.out | gawk '{print $6}')
+tot1=$(gawk "BEGIN {print $tot1+$num*$w*$en}")
+let totnum1=totnum1+num
+done
+#calculate av perc for first part. save tot1 in tot
+
+tot=$(gawk "BEGIN {print $tot+$tot1}")
+let totnum=totnum+totnum1
+AVMAPD=$(gawk "BEGIN {OFMT=\"%.2f\";print $tot1/$totnum1}")
+echo 'WTMAD-2 for basis props and rxn energies (small)= ' $AVMAPD
+
+tot1=0
+totnum1=0
+#9 sets for reaction energies of large systems and isomerisation reactions
+for i in MB16-43 DARC RSE43 BSR36 CDIE20 ISO34 ISOL24 C60ISO PArel
+do
+av=$(cat $i/.average)
+w=$(gawk "BEGIN {print 56.84/$av}")
+num=$(cat $i/.numen)
+en=$(tail -1 $i/.${1}.out | gawk '{print $6}')
+tot1=$(gawk "BEGIN {print $tot1+$num*$w*$en}")
+let totnum1=totnum1+num
+done
+
+#calculate av perc for 2nd part. save tot1 in tot
+
+tot=$(gawk "BEGIN {print $tot+$tot1}")
+let totnum=totnum+totnum1
+AVMAPD=$(gawk "BEGIN {OFMT=\"%.2f\";print $tot1/$totnum1}")
+echo 'WTMAD-2 for rxn energies (large) and isomerizations= ' $AVMAPD
+
+tot1=0
+totnum1=0
+#7 sets for barrier heights
+for i in BH76 BHPERI BHDIV10 INV24 BHROT27 PX13 WCPT18
+do
+av=$(cat $i/.average)
+w=$(gawk "BEGIN {print 56.84/$av}")
+num=$(cat $i/.numen)
+en=$(tail -1 $i/.${1}.out | gawk '{print $6}')
+tot1=$(gawk "BEGIN {print $tot1+$num*$w*$en}")
+let totnum1=totnum1+num
+done
+
+#calcuate av perc for 3rd part. save tot1 in tot
+tot=$(gawk "BEGIN {print $tot+$tot1}")
+let totnum=totnum+totnum1
+AVMAPD=$(gawk "BEGIN {OFMT=\"%.2f\";print $tot1/$totnum1}")
+echo 'WTMAD-2 for barrier heights= ' $AVMAPD
+
+tot1=0
+tot2=0
+totnum1=0
+totnum2=0
+#21 sets for NCI
+#12 sets for intermol nci
+for i in RG18 ADIM6 S22 S66 HEAVY28 WATER27 CARBHB12 PNICO23 HAL59 AHB21 CHB6 IL16
+do
+av=$(cat $i/.average)
+w=$(gawk "BEGIN {print 56.84/$av}")
+num=$(cat $i/.numen)
+en=$(tail -1 $i/.${1}.out | gawk '{print $6}')
+tot1=$(gawk "BEGIN {print $tot1+$num*$w*$en}")
+let totnum1=totnum1+num
+done
+
+#save tot1 in tot and in tot2. WTMAD-2 for subset 4
+tot=$(gawk "BEGIN {print $tot+$tot1}")
+tot2=$(gawk "BEGIN {print $tot2+$tot1}")
+let totnum=totnum+totnum1
+let totnum2=totnum2+totnum1
+AVMAPD=$(gawk "BEGIN {OFMT=\"%.2f\";print $tot1/$totnum1}")
+echo 'WTMAD-2 for intermol NCIs= ' $AVMAPD
+tot1=0
+totnum1=0
+
+#9 sets for intramol nci
+for i in IDISP ICONF ACONF Amino20x4 PCONF21 MCONF SCONF UPU23 BUT14DIOL
+do
+av=$(cat $i/.average)
+w=$(gawk "BEGIN {print 56.84/$av}")
+num=$(cat $i/.numen)
+en=$(tail -1 $i/.${1}.out | gawk '{print $6}')
+tot1=$(gawk "BEGIN {print $tot1+$num*$w*$en}")
+let totnum1=totnum1+num
+done
+
+tot2=$(gawk "BEGIN {print $tot2+$tot1}")
+tot=$(gawk "BEGIN {print $tot+$tot1}")
+let totnum=totnum+totnum1
+let totnum2=totnum2+totnum1
+AVMAPD=$(gawk "BEGIN {OFMT=\"%.2f\";print $tot1/$totnum1}")
+echo 'WTMAD-2 for intramol NCIs= ' $AVMAPD
+
+AVMAPD=$(gawk "BEGIN {OFMT=\"%.2f\";print $tot2/$totnum2}")
+echo 'WTMAD-2 for all NCIs= ' $AVMAPD
+AVMAPD=$(gawk "BEGIN {OFMT=\"%.2f\";print $tot/$totnum}")
+echo 'WTMAD-2 for GMTKN55= ' $AVMAPD
