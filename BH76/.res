@@ -40,7 +40,7 @@ $tmer  hn2/$f  hn2ts/$f    x  -1  1    $w  10.9
 $tmer  h/$f  co/$f  hcots/$f  x  -1  -1  1  $w  3.2
 $tmer  hco/$f  hcots/$f    x  -1  1    $w  22.8
 $tmer  h/$f  c2h4/$f  c2h5ts/$f  x  -1  -1  1  $w  2.0
-$tmer  c2h5/$f  c2h5ts/$f    x  -1  1    $w  42.0
+$tmer  c2h5_1/$f  c2h5ts/$f    x  -1  1    $w  42.0
 $tmer  ch3/$f  c2h4/$f  c3h7ts/$f  x  -1  -1  1  $w  6.4
 $tmer  c3h7/$f  c3h7ts/$f    x  -1  1    $w  33.0
 $tmer  hcn/$f  hcnts/$f    x  -1  1    $w  48.1
@@ -60,7 +60,7 @@ $tmer  H2O/$f  NH2/$f  RKT07/$f  x  -1  -1  1  $w  13.7
 $tmer  hcl/$f  ch3/$f  RKT08/$f  x  -1  -1  1  $w  1.8
 $tmer  cl/$f  CH4/$f  RKT08/$f  x  -1  -1  1  $w  6.8
 $tmer  oh/$f  C2H6/$f  RKT09/$f  x  -1  -1  1  $w  3.5
-$tmer  H2O/$f  C2H5/$f  RKT09/$f  x  -1  -1  1  $w  20.4
+$tmer  H2O/$f  C2H5_2/$f  RKT09/$f  x  -1  -1  1  $w  20.4
 $tmer  f/$f  H2/$f  RKT10/$f  x  -1  -1  1  $w  1.6
 $tmer  hf/$f  h/$f  RKT10/$f  x  -1  -1  1  $w  33.8
 $tmer  O/$f  CH4/$f  RKT11/$f  x  -1  -1  1  $w  14.4
@@ -75,10 +75,10 @@ $tmer  O/$f  hcl/$f  RKT17/$f  x  -1  -1  1  $w  10.4
 $tmer  oh/$f  cl/$f  RKT17/$f  x  -1  -1  1  $w  9.9
 $tmer  NH2/$f  ch3/$f  RKT18/$f  x  -1  -1  1  $w  8.9
 $tmer  NH/$f  CH4/$f  RKT18/$f  x  -1  -1  1  $w  22.0
-$tmer  NH2/$f  C2H5/$f  RKT19/$f  x  -1  -1  1  $w  9.8
+$tmer  NH2/$f  C2H5_2/$f  RKT19/$f  x  -1  -1  1  $w  9.8
 $tmer  NH/$f  C2H6/$f  RKT19/$f  x  -1  -1  1  $w  19.4
 $tmer  C2H6/$f  NH2/$f  RKT20/$f  x  -1  -1  1  $w  11.3
-$tmer  C2H5/$f  NH3/$f  RKT20/$f  x  -1  -1  1  $w  17.8
+$tmer  C2H5_2/$f  NH3/$f  RKT20/$f  x  -1  -1  1  $w  17.8
 $tmer  NH2/$f  CH4/$f  RKT21/$f  x  -1  -1  1  $w  13.9
 $tmer  NH3/$f  ch3/$f  RKT21/$f  x  -1  -1  1  $w  16.9
 $tmer  C5H8/$f  RKT22/$f    x  -1  1    $w  39.7
