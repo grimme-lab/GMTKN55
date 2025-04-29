@@ -782,7 +782,7 @@ def get_molecules_from_filesystem(verbosity: int) -> dict[str, list[Molecule]]:
             # Categorize the molecule by its GMTKN55 subset
             mol.subset = dir_name
             mol_list.append(mol)
-            if verbosity > 1:
+            if verbosity > 2:
                 print(f"Read molecule {mol.name} from {mol_dir}")
         # add the list of molecules to the dictionary
         gmtkn55_mols[dir_name] = mol_list

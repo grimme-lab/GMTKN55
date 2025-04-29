@@ -113,6 +113,86 @@ def parse_required_elements(args: argparse.Namespace) -> list[tuple]:
     return required_elements
 
 
+# class MoleculeConstraints:
+#     """
+#     Class to hold the constraints for the molecules.
+#     """
+#
+#     def __init__(
+#         self,
+#         min_charge: int | None,
+#         max_charge: int | None,
+#         max_uhf: int | None,
+#     ) -> None:
+#         self.min_charge = min_charge
+#         self.max_charge = max_charge
+#         self.max_uhf = max_uhf
+
+
+def evaluate_subset(
+    mols: list[Molecule],
+    verbosity: int,
+    required_elements: list[tuple],
+    allowed_elements: list[int],
+    subset: str,
+    method: str,
+    res_format: int,
+    min_charge: int | None,
+    max_charge: int | None,
+    max_uhf: int | None,
+    res_file: str = ".res",
+) -> np.ndarray:
+    """
+    Evaluate a subset of molecules and return the results.
+    """
+    allowed_mols = check_molecule_composition(
+        mols,
+        verbosity,
+        required_elements,
+        allowed_elements,
+        min_charge,
+        max_charge,
+        max_uhf,
+    )
+    if verbosity > 2:
+        for mol in allowed_mols:
+            print(f"Allowed molecule: {mol.name}")
+    # filter the res file
+    # 1. Get all allowed_mols.name entries in a list
+    allowed_mols_names = [mol.name for mol in allowed_mols]
+    # 2. Get the res file path
+    res_file_path = Path(subset + "/" + res_file).resolve()
+    res_lines = res_file_path.read_text(encoding="utf8").splitlines()
+    filtered_res_lines, contains_reaction = filter_res_file(
+        res_lines, set(allowed_mols_names)
+    )
+    # 3. Write the filtered res file to ".res_eval"
+    if contains_reaction:
+        res_file_path_eval = Path(subset + "/" + res_file + "_eval").resolve()
+        with res_file_path_eval.open("w", encoding="utf8") as f:
+            for line in filtered_res_lines:
+                f.write(line + "\n")
+        result = sp.run(
+            ["bash", str(res_file_path_eval), method, str(res_format)],
+            check=True,
+            capture_output=True,
+            text=True,
+            # change working directory to the subset directory
+            cwd=Path(subset).resolve(),
+        )
+        try:
+            ref_comp_array: np.ndarray = parse_res_file(result.stdout)
+        except (IndexError, ValueError):
+            print(f"Error parsing res file for {subset}.\n" + "Original output:")
+            print(result.stdout)
+            print(result.stderr)
+            ref_comp_array = np.array([np.nan])
+    else:
+        print(f"No valid reactions found in {subset}.")
+        ref_comp_array = np.array([np.nan])
+    return ref_comp_array
+
+
 def main() -> int:
     """
     Main function that is called when the script is executed
@@ -129,48 +209,33 @@ def main() -> int:
     for subset, mol_list in gmtkn_mol_dict.items():
         if verbosity > 1:
             print(f"\n### {subset} ####")
-        allowed_mols = check_molecule_composition(
-            mol_list,
-            verbosity,
-            required_elements,
-            allowed_elements,
-            args.min_charge,
-            args.max_charge,
-            args.max_uhf,
+        gmtkn_results_dict[subset] = evaluate_subset(
+            mols=mol_list,
+            verbosity=verbosity,
+            required_elements=required_elements,
+            allowed_elements=allowed_elements,
+            subset=subset,
+            method=args.method,
+            res_format=args.format,
+            min_charge=args.min_charge,
+            max_charge=args.max_charge,
+            max_uhf=args.max_uhf,
         )
-        if verbosity > 1:
-            for mol in allowed_mols:
-                print(mol.name)
-        # filter the res file
-        # 1. Get all allowed_mols.name entries in a list
-        allowed_mols_names = [mol.name for mol in allowed_mols]
-        # 2. Get the res file path
-        res_file_path = Path(subset + "/.res").resolve()
-        res_lines = res_file_path.read_text(encoding="utf8").splitlines()
-        filtered_res_lines, contains_reaction = filter_res_file(
-            res_lines, set(allowed_mols_names)
-        )
-        # 3. Write the filtered res file to ".res_eval"
-        if contains_reaction:
-            res_file_path_eval = Path(subset + "/.res_eval").resolve()
-            with res_file_path_eval.open("w", encoding="utf8") as f:
-                for line in filtered_res_lines:
-                    f.write(line + "\n")
-            result = sp.run(
-                ["bash", str(res_file_path_eval), args.method, str(args.format)],
-                check=True,
-                capture_output=True,
-                text=True,
-                # change working directory to the subset directory
-                cwd=Path(subset).resolve(),
+        if subset == "BH76":
+            # NOTE: BH76 is a special case
+            gmtkn_results_dict["BH76RC"] = evaluate_subset(
+                mols=mol_list,
+                verbosity=verbosity,
+                required_elements=required_elements,
+                allowed_elements=allowed_elements,
+                subset=subset,
+                method=args.method,
+                res_format=args.format,
+                min_charge=args.min_charge,
+                max_charge=args.max_charge,
+                max_uhf=args.max_uhf,
+                res_file=".resRC",
             )
-            try:
-                gmtkn_results_dict[subset] = parse_res_file(result.stdout)
-            except (IndexError, ValueError):
-                print(f"Error parsing res file for {subset}.\n" + "Original output:")
-                print(result.stdout)
-                print(result.stderr)
-                gmtkn_results_dict[subset] = np.array([np.nan])
 
     if verbosity > 1:
         print("\n### Results ###")

@@ -12,19 +12,31 @@ def extract_species_from_path(path: str) -> list[str]:
     Extract compound and its species from a string like:
     - '01_10{P,R1,R2}/$func/' → ['01_10P', '01_10R1', '01_10R2']
     - '{DMML_REACT,DMML_INT1}/$f' → ['DMML_REACT', 'DMML_INT1']
+    - '{ed,ts}1/$f' → ['ed1', 'ts1']
     """
-    match = re.match(r"(?:(?P<base>[^{}]+))?\{(?P<species>[^}]+)\}", path)
-    if not match:
-        raise ValueError(
-            f"Invalid format for species extraction: {path}. Expected format: 'base{{species}}'."
-        )
+    # Explicitly match base{species}, {species}, or {species}base
+    match_base_before = re.match(r"(?P<base>[^{}]+)/?\{(?P<species>[^}]+)\}", path)
+    match_base_after = re.match(r"\{(?P<species>[^}]+)\}(?P<base>[^/]+)", path)
+    match_no_base = re.match(r"\{(?P<species>[^}]+)\}", path)
 
-    base = match.group("base") or ""
-    species = [s.strip() for s in match.group("species").split(",")]
-
-    if base:
+    if match_base_before:
+        base = match_base_before.group("base")
+        species = [s.strip() for s in match_base_before.group("species").split(",")]
         return [f"{base}{s}" for s in species]
-    return species
+
+    if match_base_after:
+        base = match_base_after.group("base")
+        species = [s.strip() for s in match_base_after.group("species").split(",")]
+        return [f"{s}{base}" for s in species]
+
+    if match_no_base:
+        species = [s.strip() for s in match_no_base.group("species").split(",")]
+        return species
+
+    raise ValueError(
+        f"Invalid format for species extraction: {path}. "
+        + "Expected format like 'base{{species}}', '{{species}}', or '{{species}}base'."
+    )
 
 
 def filter_res_file(
