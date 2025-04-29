@@ -3,11 +3,10 @@ Python script that evaluates GMTKN55.
 """
 
 import sys
+import subprocess as sp
 
 from pathlib import Path
 import argparse
-from tqdm import tqdm
-import subprocess as sp
 import numpy as np
 
 from utils import (
@@ -16,9 +15,7 @@ from utils import (
     Molecule,
     get_molecules_from_filesystem,
     parse_element_list,
-    molecule_has_required_elements,
     check_molecule_composition,
-    GMTKN55_DIRS,
 )
 
 
@@ -113,33 +110,42 @@ def parse_required_elements(args: argparse.Namespace) -> list[tuple]:
     return required_elements
 
 
-# class MoleculeConstraints:
-#     """
-#     Class to hold the constraints for the molecules.
-#     """
-#
-#     def __init__(
-#         self,
-#         min_charge: int | None,
-#         max_charge: int | None,
-#         max_uhf: int | None,
-#     ) -> None:
-#         self.min_charge = min_charge
-#         self.max_charge = max_charge
-#         self.max_uhf = max_uhf
+class MoleculeConstraints:
+    """
+    Class to hold the constraints for the molecules.
+    """
+
+    def __init__(
+        self,
+        allowed_elements: list[int],
+        required_elements: list[tuple],
+        min_charge: int | None,
+        max_charge: int | None,
+        max_uhf: int | None,
+    ) -> None:
+        self.allowed_elements = allowed_elements
+        self.required_elements = required_elements
+        self.min_charge = min_charge
+        self.max_charge = max_charge
+        self.max_uhf = max_uhf
+
+    def __str__(self) -> str:
+        return (
+            f"Allowed elements: {self.allowed_elements}\n"
+            f"Required elements: {self.required_elements}\n"
+            f"Minimal charge: {self.min_charge}\n"
+            f"Maximal charge: {self.max_charge}\n"
+            f"Maximal number of unpaired electrons: {self.max_uhf}\n"
+        )
 
 
 def evaluate_subset(
     mols: list[Molecule],
     verbosity: int,
-    required_elements: list[tuple],
-    allowed_elements: list[int],
+    config: MoleculeConstraints,
     subset: str,
     method: str,
     res_format: int,
-    min_charge: int | None,
-    max_charge: int | None,
-    max_uhf: int | None,
     res_file: str = ".res",
 ) -> np.ndarray:
     """
@@ -148,11 +154,11 @@ def evaluate_subset(
     allowed_mols = check_molecule_composition(
         mols,
         verbosity,
-        required_elements,
-        allowed_elements,
-        min_charge,
-        max_charge,
-        max_uhf,
+        config.required_elements,
+        config.allowed_elements,
+        config.min_charge,
+        config.max_charge,
+        config.max_uhf,
     )
     if verbosity > 2:
         for mol in allowed_mols:
@@ -202,6 +208,15 @@ def main() -> int:
     verbosity = args.verbosity
     required_elements = parse_required_elements(args)
     allowed_elements = parse_element_list(args.allowed_elements)
+    constrain_config = MoleculeConstraints(
+        allowed_elements=allowed_elements,
+        required_elements=required_elements,
+        min_charge=args.min_charge,
+        max_charge=args.max_charge,
+        max_uhf=args.max_uhf,
+    )
+    if verbosity > 0:
+        print(constrain_config)
 
     gmtkn_mol_dict = get_molecules_from_filesystem(verbosity=verbosity)
     gmtkn_results_dict: dict[str, np.ndarray] = {}
@@ -212,28 +227,20 @@ def main() -> int:
         gmtkn_results_dict[subset] = evaluate_subset(
             mols=mol_list,
             verbosity=verbosity,
-            required_elements=required_elements,
-            allowed_elements=allowed_elements,
+            config=constrain_config,
             subset=subset,
             method=args.method,
             res_format=args.format,
-            min_charge=args.min_charge,
-            max_charge=args.max_charge,
-            max_uhf=args.max_uhf,
         )
         if subset == "BH76":
             # NOTE: BH76 is a special case
             gmtkn_results_dict["BH76RC"] = evaluate_subset(
                 mols=mol_list,
                 verbosity=verbosity,
-                required_elements=required_elements,
-                allowed_elements=allowed_elements,
+                config=constrain_config,
                 subset=subset,
                 method=args.method,
                 res_format=args.format,
-                min_charge=args.min_charge,
-                max_charge=args.max_charge,
-                max_uhf=args.max_uhf,
                 res_file=".resRC",
             )
 
@@ -241,7 +248,9 @@ def main() -> int:
         print("\n### Results ###")
         for subset, results in gmtkn_results_dict.items():
             print(f"\n### {subset} ####")
-            print(results)
+            # print the numpy array
+            with np.printoptions(precision=3, suppress=True, floatmode="fixed"):
+                print(results)
 
     return 0
 

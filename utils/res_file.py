@@ -10,14 +10,26 @@ import numpy as np
 def extract_species_from_path(path: str) -> list[str]:
     """
     Extract compound and its species from a string like:
-    - '01_10{P,R1,R2}/$func/' → ['01_10P', '01_10R1', '01_10R2']
-    - '{DMML_REACT,DMML_INT1}/$f' → ['DMML_REACT', 'DMML_INT1']
-    - '{ed,ts}1/$f' → ['ed1', 'ts1']
+    - '01_10{P,R1,R2}/$func/' → ['01_10P', '01_10R1', '01_10R2'] → BASE BEFORE EXISTS
+    - '{DMML_REACT,DMML_INT1}/$f' → ['DMML_REACT', 'DMML_INT1'] → NO BASE
+    - '{ed,ts}1/$f' → ['ed1', 'ts1'] → BASE AFTER EXISTS
+    - 'A{M,D}2/$f' → ['AM2', 'AD2'] → BASE BEFORE AND AFTER EXISTS
     """
     # Explicitly match base{species}, {species}, or {species}base
+    match_base_before_and_after = re.match(
+        r"(?P<prefix>[^{}]+)\{(?P<species>[^}]+)\}(?P<suffix>[^/]+)", path
+    )
     match_base_before = re.match(r"(?P<base>[^{}]+)/?\{(?P<species>[^}]+)\}", path)
     match_base_after = re.match(r"\{(?P<species>[^}]+)\}(?P<base>[^/]+)", path)
     match_no_base = re.match(r"\{(?P<species>[^}]+)\}", path)
+
+    if match_base_before_and_after:
+        prefix = match_base_before_and_after.group("prefix")
+        suffix = match_base_before_and_after.group("suffix")
+        species = [
+            s.strip() for s in match_base_before_and_after.group("species").split(",")
+        ]
+        return [f"{prefix}{s}{suffix}" for s in species]
 
     if match_base_before:
         base = match_base_before.group("base")
