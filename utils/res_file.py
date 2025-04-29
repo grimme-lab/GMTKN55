@@ -4,6 +4,8 @@ Filter a .res file to include only reactions with all valid species.
 
 import re
 
+import numpy as np
+
 
 def extract_species_from_path(path: str) -> list[str]:
     """
@@ -80,3 +82,22 @@ def filter_res_file(
             result.append(line)
 
     return result, valid_reaction_found
+
+
+def parse_res_file(res_file_content: str) -> np.ndarray:
+    """
+     Parse the content of a .res file.
+
+    -158.106240453700   -158.105609208100      0.000000000000      0.000000000000      0.000000000000    0.39611   -0.20189    0.59800   B_T/PBEhB_G/PBEh
+    -197.333891140300   -197.333186851700      0.000000000000      0.000000000000      0.000000000000    0.44195   -0.17205    0.61400   P_TT/PBEP_TG/PBE
+    -197.333891140300   -197.332961886700      0.000000000000      0.000000000000      0.000000000000    0.58312   -0.37788    0.96100   P_TT/PBEP_GG/PBE
+    -197.333891140300   -197.329711152500      0.000000000000      0.000000000000      0.000000000000    2.62298   -0.19002    2.81300   P_TT/PBEP_GX/PBE
+    ...
+    """
+    data = [
+        (float(line.split()[7]), float(line.split()[5]))
+        for line in res_file_content.splitlines()
+        if line.strip()
+    ]
+    result_array = np.array(data)
+    return result_array

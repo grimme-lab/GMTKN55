@@ -2,12 +2,17 @@
 Python script that evaluates GMTKN55.
 """
 
+import sys
+
 from pathlib import Path
 import argparse
 from tqdm import tqdm
+import subprocess as sp
+import numpy as np
 
 from utils import (
     filter_res_file,
+    parse_res_file,
     Molecule,
     get_molecules_from_filesystem,
     parse_element_list,
@@ -74,6 +79,12 @@ def get_args() -> argparse.Namespace:
         help="Maximum number of unpaired electrons (UHF) for the molecules."
         + " Format example: `--max-uhf 2`",
     )
+    parser.add_argument(
+        "--method", type=str, required=True, default="", help="Method to evaluate"
+    )
+    parser.add_argument(
+        "--format", type=int, required=False, default=13, help="Format to evaluate"
+    )
     return parser.parse_args()
 
 
@@ -113,6 +124,7 @@ def main() -> int:
     allowed_elements = parse_element_list(args.allowed_elements)
 
     gmtkn_mol_dict = get_molecules_from_filesystem(verbosity=verbosity)
+    gmtkn_results_dict: dict[str, np.ndarray] = {}
     # add all molecules from gmtkn_mol_dict to all_mols
     for subset, mol_list in gmtkn_mol_dict.items():
         if verbosity > 1:
@@ -135,13 +147,36 @@ def main() -> int:
         # 2. Get the res file path
         res_file_path = Path(subset + "/.res").resolve()
         res_lines = res_file_path.read_text(encoding="utf8").splitlines()
-        filtered_res_lines, contains_reaction = filter_res_file(res_lines, set(allowed_mols_names))
+        filtered_res_lines, contains_reaction = filter_res_file(
+            res_lines, set(allowed_mols_names)
+        )
         # 3. Write the filtered res file to ".res_eval"
         if contains_reaction:
             res_file_path_eval = Path(subset + "/.res_eval").resolve()
             with res_file_path_eval.open("w", encoding="utf8") as f:
                 for line in filtered_res_lines:
                     f.write(line + "\n")
+            result = sp.run(
+                ["bash", str(res_file_path_eval), args.method, str(args.format)],
+                check=True,
+                capture_output=True,
+                text=True,
+                # change working directory to the subset directory
+                cwd=Path(subset).resolve(),
+            )
+            try:
+                gmtkn_results_dict[subset] = parse_res_file(result.stdout)
+            except (IndexError, ValueError):
+                print(f"Error parsing res file for {subset}.\n" + "Original output:")
+                print(result.stdout)
+                print(result.stderr)
+                gmtkn_results_dict[subset] = np.array([np.nan])
+
+    if verbosity > 1:
+        print("\n### Results ###")
+        for subset, results in gmtkn_results_dict.items():
+            print(f"\n### {subset} ####")
+            print(results)
 
     return 0
 
