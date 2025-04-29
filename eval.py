@@ -8,6 +8,7 @@ import subprocess as sp
 from pathlib import Path
 import argparse
 import numpy as np
+import pandas as pd
 
 from utils import (
     filter_res_file,
@@ -82,6 +83,12 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "--format", type=int, required=False, default=13, help="Format to evaluate"
     )
+    parser.add_argument(
+        "--write-to-csv",
+        action="store_true",
+        default=False,
+        help="Write the detailed GMTKN55 results to a CSV file.",
+    )
     return parser.parse_args()
 
 
@@ -141,13 +148,14 @@ class MoleculeConstraints:
 
 def evaluate_subset(
     mols: list[Molecule],
+    dataframe: pd.DataFrame,
     verbosity: int,
     config: MoleculeConstraints,
     subset: str,
     method: str,
     res_format: int,
     res_file: str = ".res",
-) -> np.ndarray:
+) -> pd.DataFrame:
     """
     Evaluate a subset of molecules and return the results.
     """
@@ -169,7 +177,7 @@ def evaluate_subset(
     # 2. Get the res file path
     res_file_path = Path(subset + "/" + res_file).resolve()
     res_lines = res_file_path.read_text(encoding="utf8").splitlines()
-    filtered_res_lines, contains_reaction = filter_res_file(
+    filtered_res_lines, systems_per_reaction, contains_reaction = filter_res_file(
         res_lines, set(allowed_mols_names)
     )
     # 3. Write the filtered res file to ".res_eval"
@@ -189,14 +197,60 @@ def evaluate_subset(
         try:
             ref_comp_array: np.ndarray = parse_res_file(result.stdout)
         except (IndexError, ValueError):
-            print(f"Error parsing res file for {subset}.\n" + "Original output:")
+            print(
+                f"Error parsing res file {res_file} for {subset}.\n"
+                + "Original output:"
+            )
             print(result.stdout)
             print(result.stderr)
             ref_comp_array = np.array([np.nan])
     else:
         print(f"No valid reactions found in {subset}.")
         ref_comp_array = np.array([np.nan])
-    return ref_comp_array
+    # 4. Add the results to the dataframe
+    # before: Check if systems_per_reaction and ref_comp_array have the same length
+    if len(systems_per_reaction) != len(ref_comp_array):
+        raise ValueError(
+            f"The number of systems per reaction ({len(systems_per_reaction)}) "
+            + f"does not match the number of reference values ({len(ref_comp_array)})."
+        )
+    # NOTE: Special case for BH76RC
+    if res_file == ".resRC":
+        subset = subset + "RC"
+    new_rows = pd.DataFrame(
+        [
+            [subset, system, ref, comp]
+            for system, (ref, comp) in zip(systems_per_reaction, ref_comp_array)
+        ],
+        columns=["Subset", "Reaction", "ReferenceValue", "MethodValue"],
+    ).astype(
+        {
+            "Subset": str,
+            "Reaction": str,
+            "ReferenceValue": float,
+            "MethodValue": float,
+        }
+    )
+    if not (new_rows.empty or dataframe.empty):
+        return pd.concat([dataframe, new_rows], ignore_index=True)
+    if new_rows.empty:
+        return dataframe
+    return new_rows
+
+
+def statistic(df: pd.DataFrame) -> None:
+    """
+    Calculate the statistics of the dataframe.
+    """
+    print("\n### Statistics ###")
+    # for each subset, calculate the MAD between the reference value and the method value
+    print("Subset    :      MAD")
+    print("--------- : --------")
+    for subset in df["Subset"].unique():
+        subset_df = df[df["Subset"] == subset]
+        # calculate the mean absolute deviation
+        mad = np.mean(np.abs(subset_df["ReferenceValue"] - subset_df["MethodValue"]))
+        print(f"{subset:<10}:{mad:8.3f}")
 
 
 def main() -> int:
@@ -219,13 +273,16 @@ def main() -> int:
         print(constrain_config)
 
     gmtkn_mol_dict = get_molecules_from_filesystem(verbosity=verbosity)
-    gmtkn_results_dict: dict[str, np.ndarray] = {}
+    gmtkn_results = pd.DataFrame(
+        columns=["Subset", "Reaction", "ReferenceValue", "MethodValue"]
+    )
     # add all molecules from gmtkn_mol_dict to all_mols
     for subset, mol_list in gmtkn_mol_dict.items():
         if verbosity > 1:
             print(f"\n### {subset} ####")
-        gmtkn_results_dict[subset] = evaluate_subset(
+        gmtkn_results = evaluate_subset(
             mols=mol_list,
+            dataframe=gmtkn_results,
             verbosity=verbosity,
             config=constrain_config,
             subset=subset,
@@ -234,8 +291,9 @@ def main() -> int:
         )
         if subset == "BH76":
             # NOTE: BH76 is a special case
-            gmtkn_results_dict["BH76RC"] = evaluate_subset(
+            gmtkn_results = evaluate_subset(
                 mols=mol_list,
+                dataframe=gmtkn_results,
                 verbosity=verbosity,
                 config=constrain_config,
                 subset=subset,
@@ -244,13 +302,33 @@ def main() -> int:
                 res_file=".resRC",
             )
 
-    if verbosity > 1:
+    if verbosity > 0:
         print("\n### Results ###")
-        for subset, results in gmtkn_results_dict.items():
-            print(f"\n### {subset} ####")
-            # print the numpy array
-            with np.printoptions(precision=3, suppress=True, floatmode="fixed"):
-                print(results)
+        print(gmtkn_results)
+    if verbosity > 2:
+        with pd.option_context(
+            "display.max_rows",
+            None,
+            "display.max_columns",
+            None,
+            "display.width",
+            None,
+            "display.max_colwidth",
+            None,
+        ):
+            print(gmtkn_results)
+    if args.write_to_csv:
+        # write the results to a csv file
+        gmtkn_results.to_csv(
+            f"gmtkn55_{args.method}.csv", index=False, float_format="%.6f"
+        )
+        if verbosity > 0:
+            print(
+                f"Results written to gmtkn55_{args.method}.csv with {len(gmtkn_results)} entries."
+            )
+
+    # calculate the statistics
+    statistic(gmtkn_results)
 
     return 0
 

@@ -53,12 +53,13 @@ def extract_species_from_path(path: str) -> list[str]:
 
 def filter_res_file(
     res_lines: list[str], valid_species: set[str]
-) -> tuple[list[str], bool]:
+) -> tuple[list[str], list[set[str]], bool]:
     """
     Filter the lines of a .res file to include only those with valid species.
     """
     result = []
     valid_reaction_found = False
+    list_unique_species: list[set[str]] = []
     for line in res_lines:
         stripped = line.strip()
         if not stripped or stripped.startswith("#"):
@@ -104,8 +105,9 @@ def filter_res_file(
         if all(s in valid_species for s in unique_species):
             valid_reaction_found = True
             result.append(line)
+            list_unique_species.append(unique_species)
 
-    return result, valid_reaction_found
+    return result, list_unique_species, valid_reaction_found
 
 
 def parse_res_file(res_file_content: str) -> np.ndarray:
