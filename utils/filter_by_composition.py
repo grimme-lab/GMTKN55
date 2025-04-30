@@ -1,6 +1,8 @@
 """
-Python script that is based on MindlessGen
-and filters compounds based on allowed and forbidden elements.
+Based on MindlessGen
+- utilities for filtering compounds based on allowed and forbidden elements.
+- check if the molecule has the required elements
+- parse the allowed elements from a string
 """
 
 from tqdm import tqdm
@@ -82,15 +84,17 @@ def check_molecule_composition(
     allowed and forbidden elements.
     """
     allowed_mols: list[Molecule] = []
-    hide_progress = verbosity == 0
-    for mol in tqdm(mols, desc="Checking composition...", unit="molecule", disable=hide_progress):
+    hide_progress = verbosity < 3
+    for mol in tqdm(
+        mols, desc="Checking composition...", unit="molecule", disable=hide_progress
+    ):
         # check if all elements in the molecule are allowed
         if allowed_elements:
             if all(ati in allowed_elements for ati in mol.ati):
-                if verbosity > 1:
+                if verbosity > 2:
                     print(f"Molecule {mol.name} has only allowed elements.")
             else:
-                if verbosity > 1:
+                if verbosity > 2:
                     print(f"Molecule {mol.name} has forbidden elements.")
                 continue
         if required_elements and (
@@ -99,15 +103,15 @@ def check_molecule_composition(
             continue
 
         if min_charge is not None and mol.charge < min_charge:
-            if verbosity > 1:
+            if verbosity > 2:
                 print(f"Molecule {mol.name} has charge {mol.charge}.")
             continue
         if max_charge is not None and mol.charge > max_charge:
-            if verbosity > 1:
+            if verbosity > 2:
                 print(f"Molecule {mol.name} has charge {mol.charge}.")
             continue
         if max_uhf is not None and mol.uhf > max_uhf:
-            if verbosity > 1:
+            if verbosity > 2:
                 print(f"Molecule {mol.name} has UHF {mol.uhf}.")
             continue
 

@@ -2,13 +2,13 @@
 Python script that evaluates GMTKN55.
 """
 
-import sys
 import subprocess as sp
 
 from pathlib import Path
 import argparse
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from utils import (
     filter_res_file,
@@ -17,6 +17,7 @@ from utils import (
     get_molecules_from_filesystem,
     parse_element_list,
     check_molecule_composition,
+    wtmad2,
 )
 
 
@@ -215,7 +216,7 @@ def evaluate_subset(
             + f"does not match the number of reference values ({len(ref_comp_array)})."
         )
     # NOTE: Special case for BH76RC
-    if res_file == ".resRC":
+    if res_file == ".resRC" and subset == "BH76":
         subset = subset + "RC"
     new_rows = pd.DataFrame(
         [
@@ -238,21 +239,6 @@ def evaluate_subset(
     return new_rows
 
 
-def statistic(df: pd.DataFrame) -> None:
-    """
-    Calculate the statistics of the dataframe.
-    """
-    print("\n### Statistics ###")
-    # for each subset, calculate the MAD between the reference value and the method value
-    print("Subset    :      MAD")
-    print("--------- : --------")
-    for subset in df["Subset"].unique():
-        subset_df = df[df["Subset"] == subset]
-        # calculate the mean absolute deviation
-        mad = np.mean(np.abs(subset_df["ReferenceValue"] - subset_df["MethodValue"]))
-        print(f"{subset:<10}:{mad:8.3f}")
-
-
 def main() -> int:
     """
     Main function that is called when the script is executed
@@ -272,25 +258,17 @@ def main() -> int:
     if verbosity > 0:
         print(constrain_config)
 
+    if verbosity > 0:
+        print("## Analyzing molecules from filesystem ##")
     gmtkn_mol_dict = get_molecules_from_filesystem(verbosity=verbosity)
     gmtkn_results = pd.DataFrame(
         columns=["Subset", "Reaction", "ReferenceValue", "MethodValue"]
     )
     # add all molecules from gmtkn_mol_dict to all_mols
-    for subset, mol_list in gmtkn_mol_dict.items():
-        if verbosity > 1:
+    for subset, mol_list in tqdm(gmtkn_mol_dict.items(), desc="Evaluating subsets"):
+        if verbosity > 2:
             print(f"\n### {subset} ####")
-        gmtkn_results = evaluate_subset(
-            mols=mol_list,
-            dataframe=gmtkn_results,
-            verbosity=verbosity,
-            config=constrain_config,
-            subset=subset,
-            method=args.method,
-            res_format=args.format,
-        )
-        if subset == "BH76":
-            # NOTE: BH76 is a special case
+        try:
             gmtkn_results = evaluate_subset(
                 mols=mol_list,
                 dataframe=gmtkn_results,
@@ -299,8 +277,22 @@ def main() -> int:
                 subset=subset,
                 method=args.method,
                 res_format=args.format,
-                res_file=".resRC",
             )
+            if subset == "BH76":
+                # NOTE: BH76 is a special case
+                gmtkn_results = evaluate_subset(
+                    mols=mol_list,
+                    dataframe=gmtkn_results,
+                    verbosity=verbosity,
+                    config=constrain_config,
+                    subset=subset,
+                    method=args.method,
+                    res_format=args.format,
+                    res_file=".resRC",
+                )
+        except Exception as e:
+            print(f"Fatal (undefined) error evaluating {subset}: {e}")
+            continue
 
     if verbosity > 0:
         print("\n### Results ###")
@@ -328,7 +320,7 @@ def main() -> int:
             )
 
     # calculate the statistics
-    statistic(gmtkn_results)
+    wtmad2s, maes = wtmad2(gmtkn_results, verbosity)
 
     return 0
 

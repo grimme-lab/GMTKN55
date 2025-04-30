@@ -5,7 +5,15 @@ from .filter_by_composition import (
     molecule_has_required_elements,
     check_molecule_composition,
 )
-from .constants import GMTKN55_DIRS
+from .statistics import wtmad2
+from .constants import (
+    GMTKN55_DIRS,
+    SMALL_REACTION_DIRS,
+    LARGE_REACTION_DIRS,
+    BARRIER_DIRS,
+    INTERMOL_NCI_DIRS,
+    INTRAMOL_NCI_DIRS,
+)
 
 __all__ = [
     "res_file",
@@ -16,4 +24,11 @@ __all__ = [
     "check_molecule_composition",
     "GMTKN55_DIRS",
     "parse_res_file",
+    "filter_res_file",
+    "wtmad2",
+    "SMALL_REACTION_DIRS",
+    "LARGE_REACTION_DIRS",
+    "BARRIER_DIRS",
+    "INTERMOL_NCI_DIRS",
+    "INTRAMOL_NCI_DIRS",
 ]

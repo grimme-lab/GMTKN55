@@ -187,3 +187,73 @@ GMTKN55_DIRS: list[str] = [
     "WCPT18",
     "YBDE18",
 ]
+
+SMALL_REACTION_DIRS: list[str] = [
+    "W4-11",
+    "G21EA",
+    "G21IP",
+    "DIPCS10",
+    "PA26",
+    "SIE4x4",
+    "ALKBDE10",
+    "YBDE18",
+    "AL2X6",
+    "HEAVYSB11",
+    "NBPRC",
+    "ALK8",
+    "RC21",
+    "G2RC",
+    "BH76RC",
+    "FH51",
+    "TAUT15",
+    "DC13",
+]
+
+LARGE_REACTION_DIRS: list[str] = [
+    "MB16-43",
+    "DARC",
+    "RSE43",
+    "BSR36",
+    "CDIE20",
+    "ISO34",
+    "ISOL24",
+    "C60ISO",
+    "PArel",
+]
+
+BARRIER_DIRS: list[str] = [
+    "BH76",
+    "BHPERI",
+    "BHDIV10",
+    "INV24",
+    "BHROT27",
+    "PX13",
+    "WCPT18",
+]
+
+INTERMOL_NCI_DIRS: list[str] = [
+    "RG18",
+    "ADIM6",
+    "S22",
+    "S66",
+    "HEAVY28",
+    "WATER27",
+    "CARBHB12",
+    "PNICO23",
+    "HAL59",
+    "AHB21",
+    "CHB6",
+    "IL16",
+]
+
+INTRAMOL_NCI_DIRS: list[str] = [
+    "IDISP",
+    "ICONF",
+    "ACONF",
+    "Amino20x4",
+    "PCONF21",
+    "MCONF",
+    "SCONF",
+    "UPU23",
+    "BUT14DIOL",
+]
