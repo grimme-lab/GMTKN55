@@ -34,7 +34,7 @@ $tmer {dimethyloxirane,H2O,butanediol}/$f                    x -1 -1 1   $w -22.
 $tmer {methylpyridine,H2,dimethylpyrrole}/$f                 x -1 -1 1   $w -20.27
 $tmer {C4H9NCO,NH3,C4H9NHCONH2}/$f                           x -1 -1 1   $w -19.72
 $tmer {C3H7CN,H2O,C3H7CONH2}/$f                              x -1 -1 1   $w -19.34
-$tmer {propylfuran,H2S,propylthiophene H2O}/$f               x -1 -1 1 1 $w -19.45
+$tmer {propylfuran,H2S,propylthiophene,H2O}/$f               x -1 -1 1 1 $w -19.45
 $tmer {diethylamine,CO,HCON_C2H5_2}/$f                       x -1 -1 1   $w -17.39
 $tmer {C3H7NCO,H2O,C3H7NH2,CO2}/$f                           x -1 -1 1 1 $w -16.98
 $tmer {C3H7CO2C2H3,ethyl-g-butyrolactone}/$f                 x -1 1      $w -16.14
