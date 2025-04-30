@@ -63,12 +63,13 @@ def wtmad2(
     wtmad2_dict["total"] /= total_number_reactions
 
     # WTMAD-2 for the subcategories
+
     ## Basic properties and reaction energies for small systems
     wtmad2_dict["smallreactions"] = 0.0
     category_number_reactions: int = 0
     for subset in SMALL_REACTION_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += len(df[df["Subset"] == subset])
+            category_number_reactions += number_reactions[subset]
             wtmad2_dict["smallreactions"] += (
                 number_reactions[subset]
                 * average_mean_reference_energy
@@ -76,12 +77,13 @@ def wtmad2(
                 / mean_reference_energies[subset]
             )
     wtmad2_dict["smallreactions"] /= category_number_reactions
+
     ## Reaction energies for large systems and isomerisation reactions
     wtmad2_dict["largereactions"] = 0.0
     category_number_reactions = 0
     for subset in LARGE_REACTION_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += len(df[df["Subset"] == subset])
+            category_number_reactions += number_reactions[subset]
             wtmad2_dict["largereactions"] += (
                 number_reactions[subset]
                 * average_mean_reference_energy
@@ -89,12 +91,13 @@ def wtmad2(
                 / mean_reference_energies[subset]
             )
     wtmad2_dict["largereactions"] /= category_number_reactions
+
     ## Reaction barrier heights
     wtmad2_dict["barrierheights"] = 0.0
     category_number_reactions = 0
     for subset in BARRIER_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += len(df[df["Subset"] == subset])
+            category_number_reactions += number_reactions[subset]
             wtmad2_dict["barrierheights"] += (
                 number_reactions[subset]
                 * average_mean_reference_energy
@@ -102,16 +105,18 @@ def wtmad2(
                 / mean_reference_energies[subset]
             )
     wtmad2_dict["barrierheights"] /= category_number_reactions
+
     ## Noncovalent interactions
     wtmad2_dict["all_nci"] = 0.0
+
     ## Intermolecular noncovalent interactions
     wtmad2_dict["intermolecular"] = 0.0
     category_number_reactions = 0
     nci_number_reactions = 0
     for subset in INTERMOL_NCI_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += len(df[df["Subset"] == subset])
-            nci_number_reactions += len(df[df["Subset"] == subset])
+            category_number_reactions += number_reactions[subset]
+            nci_number_reactions += number_reactions[subset]
             added_error = (
                 number_reactions[subset]
                 * average_mean_reference_energy
@@ -121,13 +126,14 @@ def wtmad2(
             wtmad2_dict["intermolecular"] += added_error
             wtmad2_dict["all_nci"] += added_error
     wtmad2_dict["intermolecular"] /= category_number_reactions
+
     ## Intramolecular noncovalent interactions
     wtmad2_dict["intramolecular"] = 0.0
     category_number_reactions = 0
     for subset in INTRAMOL_NCI_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += len(df[df["Subset"] == subset])
-            nci_number_reactions += len(df[df["Subset"] == subset])
+            category_number_reactions += number_reactions[subset]
+            nci_number_reactions += number_reactions[subset]
             added_error = (
                 number_reactions[subset]
                 * average_mean_reference_energy
