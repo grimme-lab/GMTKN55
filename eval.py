@@ -312,11 +312,11 @@ def main() -> int:
     if args.write_to_csv:
         # write the results to a csv file
         gmtkn_results.to_csv(
-            f"gmtkn55_{args.method}.csv", index=False, float_format="%.6f"
+            f"{args.method}.csv", index=False, float_format="%.6f"
         )
         if verbosity > 0:
             print(
-                f"Results written to gmtkn55_{args.method}.csv with {len(gmtkn_results)} entries."
+                f"Results written to {args.method}.csv with {len(gmtkn_results)} entries."
             )
 
     # calculate the statistics
