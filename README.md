@@ -33,11 +33,14 @@ The main dependencies are:
 ```
 GMTKN55/
 ├── eval.py                  # Main entry point for evaluating subsets
-├── utils/
+├── utils/                   # Contains all Python source code beyond the central eval.py script
+│   ├── __init__.py
 │   ├── statistics.py        # WTMAD-2 and statistical calculations
-│   ├── parsing.py           # Utilities for parsing molecule and .res data
-│   └── ...
-├── data/                    # Expected location of GMTKN55 subset folders
+│   ├── constants.py         # Constant data
+│   └── ...                  # Further Python source files
+├── ACONF/                   # Expected location of GMTKN55 subset folders
+├── ADIM6/                   # ...
+├── .../                     # ...
 ├── environment.yaml         # Conda environment specification
 └── README.md                # This file
 ```
@@ -68,7 +71,7 @@ python eval.py --method mydft --verbosity 2 --write-to-csv --allowed-elements '1
 
 ## 📊 Output
 
-With --write-to-csv, the script will generate a file: `<args.format>.csv` containing columns:
+With `--write-to-csv`, the script will generate a file: `<args.format>.csv` containing columns:
 
 - Subset
 - Reaction
