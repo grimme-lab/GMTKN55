@@ -75,6 +75,7 @@ With `--write-to-csv`, the script will generate a file: `<args.format>.csv` cont
 
 - Subset
 - Reaction
+- Stochiometry
 - ReferenceValue
 - MethodValue
 
