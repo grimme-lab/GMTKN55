@@ -46,12 +46,15 @@ def wtmad2(
             np.abs(subset_df["ReferenceValue"] - subset_df["MethodValue"])
         )
 
+    total_number_reactions = sum(number_reactions.values())
+    if total_number_reactions == 0:
+        raise ValueError("No reactions found in the dataset.")
+
     average_mean_reference_energy: float = float(
         np.mean(list(mean_reference_energies.values()))
     )
 
     # WTMAD-2 for the entire dataset
-    total_number_reactions = sum(number_reactions.values())
     wtmad2_dict["total"] = 0.0
     for subset in df["Subset"].unique():
         wtmad2_dict["total"] += (
@@ -76,7 +79,15 @@ def wtmad2(
                 * mads[subset]
                 / mean_reference_energies[subset]
             )
-    wtmad2_dict["smallreactions"] /= category_number_reactions
+    if category_number_reactions == 0:
+        # print warning that category WTMAD-2 is not calculated
+        print(
+            f"Warning: No reactions found in the {SMALL_REACTION_DIRS} category. "
+            + "WTMAD-2 for small reactions is not calculated."
+        )
+        wtmad2_dict["smallreactions"] = np.nan
+    else:
+        wtmad2_dict["smallreactions"] /= category_number_reactions
 
     ## Reaction energies for large systems and isomerisation reactions
     wtmad2_dict["largereactions"] = 0.0
@@ -90,7 +101,15 @@ def wtmad2(
                 * mads[subset]
                 / mean_reference_energies[subset]
             )
-    wtmad2_dict["largereactions"] /= category_number_reactions
+    if category_number_reactions == 0:
+        # print warning that category WTMAD-2 is not calculated
+        print(
+            f"Warning: No reactions found in the {LARGE_REACTION_DIRS} category. "
+            + "WTMAD-2 for large reactions is not calculated."
+        )
+        wtmad2_dict["largereactions"] = np.nan
+    else:
+        wtmad2_dict["largereactions"] /= category_number_reactions
 
     ## Reaction barrier heights
     wtmad2_dict["barrierheights"] = 0.0
@@ -104,7 +123,15 @@ def wtmad2(
                 * mads[subset]
                 / mean_reference_energies[subset]
             )
-    wtmad2_dict["barrierheights"] /= category_number_reactions
+    if category_number_reactions == 0:
+        # print warning that category WTMAD-2 is not calculated
+        print(
+            f"Warning: No reactions found in the {BARRIER_DIRS} category. "
+            + "WTMAD-2 for barrier heights is not calculated."
+        )
+        wtmad2_dict["barrierheights"] = np.nan
+    else:
+        wtmad2_dict["barrierheights"] /= category_number_reactions
 
     ## Noncovalent interactions
     wtmad2_dict["all_nci"] = 0.0
@@ -125,7 +152,15 @@ def wtmad2(
             )
             wtmad2_dict["intermolecular"] += added_error
             wtmad2_dict["all_nci"] += added_error
-    wtmad2_dict["intermolecular"] /= category_number_reactions
+    if category_number_reactions == 0:
+        # print warning that category WTMAD-2 is not calculated
+        print(
+            f"Warning: No reactions found in the {INTERMOL_NCI_DIRS} category. "
+            + "WTMAD-2 for intermolecular noncovalent interactions is not calculated."
+        )
+        wtmad2_dict["intermolecular"] = np.nan
+    else:
+        wtmad2_dict["intermolecular"] /= category_number_reactions
 
     ## Intramolecular noncovalent interactions
     wtmad2_dict["intramolecular"] = 0.0
@@ -142,8 +177,25 @@ def wtmad2(
             )
             wtmad2_dict["intramolecular"] += added_error
             wtmad2_dict["all_nci"] += added_error
-    wtmad2_dict["intramolecular"] /= category_number_reactions
-    wtmad2_dict["all_nci"] /= nci_number_reactions
+    if category_number_reactions == 0:
+        # print warning that category WTMAD-2 is not calculated
+        print(
+            f"Warning: No reactions found in the {INTRAMOL_NCI_DIRS} category. "
+            + "WTMAD-2 for intramolecular noncovalent interactions is not calculated."
+        )
+        wtmad2_dict["intramolecular"] = np.nan
+    else:
+        wtmad2_dict["intramolecular"] /= category_number_reactions
+    if nci_number_reactions == 0:
+        # print warning that category WTMAD-2 is not calculated
+        print(
+            f"Warning: No reactions found in the {INTERMOL_NCI_DIRS} and "
+            + f"{INTRAMOL_NCI_DIRS} categories. "
+            + "WTMAD-2 for all noncovalent interactions is not calculated."
+        )
+        wtmad2_dict["all_nci"] = np.nan
+    else:
+        wtmad2_dict["all_nci"] /= nci_number_reactions
 
     if verbosity > 0:
         print("\n### WTMAD-2 ###")

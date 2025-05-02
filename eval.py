@@ -3,9 +3,9 @@ Python script that evaluates GMTKN55.
 """
 
 import subprocess as sp
-
 from pathlib import Path
 import argparse
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -204,10 +204,11 @@ def evaluate_subset(
             )
             print(result.stdout)
             print(result.stderr)
-            ref_comp_array = np.array([np.nan])
+            # assign an empty array to ref_comp_array
+            ref_comp_array = np.array([])
     else:
         print(f"No valid reactions found in {subset}.")
-        ref_comp_array = np.array([np.nan])
+        ref_comp_array = np.array([])
     # 4. Add the results to the dataframe
     # before: Check if systems_per_reaction and ref_comp_array have the same length
     if len(systems_per_reaction) != len(ref_comp_array):
@@ -291,7 +292,7 @@ def main() -> int:
                     res_file=".resRC",
                 )
         except Exception as e:
-            print(f"Fatal (undefined) error evaluating {subset}: {e}")
+            print(f"Fatal error evaluating {subset}: {e}")
             continue
 
     if verbosity > 0:
