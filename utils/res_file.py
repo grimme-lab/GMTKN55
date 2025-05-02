@@ -53,13 +53,14 @@ def extract_species_from_path(path: str) -> list[str]:
 
 def filter_res_file(
     res_lines: list[str], valid_species: set[str]
-) -> tuple[list[str], list[list[str]], bool]:
+) -> tuple[list[str], list[list[str]], list[list[int]]]:
     """
     Filter the lines of a .res file to include only those with valid species.
     """
     result = []
-    valid_reaction_found = False
     list_unique_species: list[list[str]] = []
+    list_reaction_species: list[list[str]] = []
+    list_stochiometries: list[list[int]] = []
     for line in res_lines:
         stripped = line.strip()
         if not stripped or stripped.startswith("#"):
@@ -84,6 +85,16 @@ def filter_res_file(
                 break
             species_tokens.append(token)
 
+        stochiometry_start = tokens.index("x") + 1
+        stochiometry_values = []
+        for token in tokens[stochiometry_start:]:
+            if token.startswith("$"):
+                break
+            try:
+                stochiometry_values.append(int(token))
+            except ValueError:
+                continue
+
         species: list[str] = []
         for token in species_tokens:
             relevant_paths = token.split("/")
@@ -100,14 +111,13 @@ def filter_res_file(
                 species.extend(extract_species_from_path(token_to_search))
             else:
                 species.append(token_to_search)
-        # make the species a sorted list of unique species
-        unique_species = sorted(list(set(species)))
+        unique_species = set(species)
         if all(s in valid_species for s in unique_species):
-            valid_reaction_found = True
             result.append(line)
-            list_unique_species.append(unique_species)
+            list_reaction_species.append(species)
+            list_stochiometries.append(stochiometry_values)
 
-    return result, list_unique_species, valid_reaction_found
+    return result, list_reaction_species, list_stochiometries
 
 
 def parse_res_file(res_file_content: str) -> np.ndarray:

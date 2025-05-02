@@ -178,11 +178,12 @@ def evaluate_subset(
     # 2. Get the res file path
     res_file_path = Path(subset + "/" + res_file).resolve()
     res_lines = res_file_path.read_text(encoding="utf8").splitlines()
-    filtered_res_lines, systems_per_reaction, contains_reaction = filter_res_file(
+    filtered_res_lines, reactions, stochiometries = filter_res_file(
         res_lines, set(allowed_mols_names)
     )
     # 3. Write the filtered res file to ".res_eval"
-    if contains_reaction:
+    # if reactions is not empty, we can evaluate the reactions
+    if reactions:
         res_file_path_eval = Path(subset + "/" + res_file + "_eval").resolve()
         with res_file_path_eval.open("w", encoding="utf8") as f:
             for line in filtered_res_lines:
@@ -211,9 +212,9 @@ def evaluate_subset(
         ref_comp_array = np.array([])
     # 4. Add the results to the dataframe
     # before: Check if systems_per_reaction and ref_comp_array have the same length
-    if len(systems_per_reaction) != len(ref_comp_array):
+    if len(reactions) != len(ref_comp_array):
         raise ValueError(
-            f"The number of systems per reaction ({len(systems_per_reaction)}) "
+            f"The number of systems per reaction ({len(reactions)}) "
             + f"does not match the number of reference values ({len(ref_comp_array)})."
         )
     # NOTE: Special case for BH76RC
@@ -221,14 +222,17 @@ def evaluate_subset(
         subset = subset + "RC"
     new_rows = pd.DataFrame(
         [
-            [subset, system, ref, comp]
-            for system, (ref, comp) in zip(systems_per_reaction, ref_comp_array)
+            [subset, reaction, stochiometry, ref, comp]
+            for reaction, stochiometry, (ref, comp) in zip(
+                reactions, stochiometries, ref_comp_array
+            )
         ],
-        columns=["Subset", "Reaction", "ReferenceValue", "MethodValue"],
+        columns=["Subset", "Reaction", "Stochiometry", "ReferenceValue", "MethodValue"],
     ).astype(
         {
             "Subset": str,
             "Reaction": str,
+            "Stochiometry": str,
             "ReferenceValue": float,
             "MethodValue": float,
         }
