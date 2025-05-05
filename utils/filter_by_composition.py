@@ -62,10 +62,10 @@ def molecule_has_required_elements(
             contained_combinations[k] = True
     # check if any of the combinations is True
     if any(contained_combinations):
-        if verbosity > 1:
+        if verbosity > 2:
             print(f"Molecule {mol.name} has the required elements.")
         return True
-    if verbosity > 1:
+    if verbosity > 2:
         print(f"Molecule {mol.name} does not have the required elements.")
     return False
 

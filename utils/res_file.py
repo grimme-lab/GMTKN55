@@ -58,7 +58,6 @@ def filter_res_file(
     Filter the lines of a .res file to include only those with valid species.
     """
     result = []
-    list_unique_species: list[list[str]] = []
     list_reaction_species: list[list[str]] = []
     list_stochiometries: list[list[int]] = []
     for line in res_lines:
@@ -122,7 +121,7 @@ def filter_res_file(
 
 def parse_res_file(res_file_content: str) -> np.ndarray:
     """
-     Parse the content of a .res file.
+     Parse the result of a .res file execution.
 
     -158.106240453700   -158.105609208100      0.000000000000      0.000000000000      0.000000000000    0.39611   -0.20189    0.59800   B_T/PBEhB_G/PBEh
     -197.333891140300   -197.333186851700      0.000000000000      0.000000000000      0.000000000000    0.44195   -0.17205    0.61400   P_TT/PBEP_TG/PBE

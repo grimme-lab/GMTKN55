@@ -29,7 +29,7 @@ def get_args() -> argparse.Namespace:
         description="Detect fragments for a given list of molecules."
     )
     parser.add_argument(
-        "--verbosity", "-v", type=int, default=0, help="Verbosity level."
+        "--verbosity", "-v", type=int, default=1, help="Verbosity level."
     )
     parser.add_argument(
         "--allowed-elements",
@@ -37,6 +37,8 @@ def get_args() -> argparse.Namespace:
         required=False,
         default=None,
         help="Allowed elements for the molecules. "
+        + "If not provided, all elements are allowed. "
+        + "If a molecule contains an element not in this list, it will be skipped. "
         + "Format example: `--allowed-elements '57-71, 81-*'",
     )
     parser.add_argument(
@@ -158,7 +160,7 @@ def evaluate_subset(
     res_file: str = ".res",
 ) -> pd.DataFrame:
     """
-    Evaluate a subset of molecules and return the results.
+    Evaluate a subset of GMTKN55 and return a dataframe.
     """
     allowed_mols = check_molecule_composition(
         mols,
@@ -267,7 +269,7 @@ def main() -> int:
         print("## Analyzing molecules from filesystem ##")
     gmtkn_mol_dict = get_molecules_from_filesystem(verbosity=verbosity)
     gmtkn_results = pd.DataFrame(
-        columns=["Subset", "Reaction", "ReferenceValue", "MethodValue"]
+        columns=["Subset", "Reaction", "Stochiometry", "ReferenceValue", "MethodValue"]
     )
     # add all molecules from gmtkn_mol_dict to all_mols
     for subset, mol_list in tqdm(gmtkn_mol_dict.items(), desc="Evaluating subsets"):

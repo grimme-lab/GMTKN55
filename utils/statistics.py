@@ -25,11 +25,11 @@ def wtmad2(
     \text{WTMAD-2} = \frac{1}{\sum\limits_{i=1}^{N} N_i} \cdot \sum\limits_{i=1}^{N} N_i \cdot \left( \frac{\langle |\Delta E| \rangle}{|\Delta E|_i} \right) \cdot \text{MAD}_i
     \end{equation}
     Where:
-        •	N is the total number of subsets (e.g., 55 for GMTKN55),
-        •	N_i is the number of data points in subset i,
-        •	\langle |\Delta E| \rangle is the average of the average absolute reference energies over all subsets,
-        •	|\Delta E|_i is the average absolute reference energy for subset i,
-        •	\text{MAD}_i is the mean absolute deviation for subset i.
+    - N is the total number of subsets (e.g., 55 for GMTKN55),
+    - N_i is the number of data points in subset i,
+    - \langle |\Delta E| \rangle is the average of the average absolute reference energies over all subsets,
+    - |\Delta E|_i is the average absolute reference energy for subset i,
+    - \text{MAD}_i is the mean absolute deviation for subset i.
     """
     wtmad2_dict: dict[str, float] = {}
 
@@ -80,7 +80,6 @@ def wtmad2(
                 / mean_reference_energies[subset]
             )
     if category_number_reactions == 0:
-        # print warning that category WTMAD-2 is not calculated
         print(
             f"Warning: No reactions found in the {SMALL_REACTION_DIRS} category. "
             + "WTMAD-2 for small reactions is not calculated."
@@ -102,7 +101,6 @@ def wtmad2(
                 / mean_reference_energies[subset]
             )
     if category_number_reactions == 0:
-        # print warning that category WTMAD-2 is not calculated
         print(
             f"Warning: No reactions found in the {LARGE_REACTION_DIRS} category. "
             + "WTMAD-2 for large reactions is not calculated."
@@ -124,7 +122,6 @@ def wtmad2(
                 / mean_reference_energies[subset]
             )
     if category_number_reactions == 0:
-        # print warning that category WTMAD-2 is not calculated
         print(
             f"Warning: No reactions found in the {BARRIER_DIRS} category. "
             + "WTMAD-2 for barrier heights is not calculated."
@@ -153,7 +150,6 @@ def wtmad2(
             wtmad2_dict["intermolecular"] += added_error
             wtmad2_dict["all_nci"] += added_error
     if category_number_reactions == 0:
-        # print warning that category WTMAD-2 is not calculated
         print(
             f"Warning: No reactions found in the {INTERMOL_NCI_DIRS} category. "
             + "WTMAD-2 for intermolecular noncovalent interactions is not calculated."
@@ -178,7 +174,6 @@ def wtmad2(
             wtmad2_dict["intramolecular"] += added_error
             wtmad2_dict["all_nci"] += added_error
     if category_number_reactions == 0:
-        # print warning that category WTMAD-2 is not calculated
         print(
             f"Warning: No reactions found in the {INTRAMOL_NCI_DIRS} category. "
             + "WTMAD-2 for intramolecular noncovalent interactions is not calculated."
@@ -187,7 +182,6 @@ def wtmad2(
     else:
         wtmad2_dict["intramolecular"] /= category_number_reactions
     if nci_number_reactions == 0:
-        # print warning that category WTMAD-2 is not calculated
         print(
             f"Warning: No reactions found in the {INTERMOL_NCI_DIRS} and "
             + f"{INTRAMOL_NCI_DIRS} categories. "
@@ -208,7 +202,6 @@ def wtmad2(
                     f"   {subset:<10}: {number_reactions[subset]:<7} | "
                     + f"{mean_reference_energies[subset]:<11.3f} | {mads[subset]:<8.3f}"
                 )
-            # average mean reference energy and total number of reactions
             print("   --------------------------------------------")
             print(
                 f"   Average <|ΔE|> : {average_mean_reference_energy:.3f} "
