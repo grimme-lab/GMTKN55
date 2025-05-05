@@ -130,6 +130,7 @@ BOHR2AA = (
     0.529177210544  # taken from https://physics.nist.gov/cgi-bin/cuu/Value?bohrrada0
 )
 AA2BOHR = 1 / BOHR2AA
+HARTREE_TO_KCAL = 627.5094740631
 
 GMTKN55_DIRS: list[str] = [
     "ACONF",

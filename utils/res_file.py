@@ -4,8 +4,6 @@ Filter a .res file to include only reactions with all valid species.
 
 import re
 
-import numpy as np
-
 
 def extract_species_from_path(path: str) -> list[str]:
     """
@@ -119,7 +117,7 @@ def filter_res_file(
     return result, list_reaction_species, list_stochiometries
 
 
-def parse_res_file(res_file_content: str) -> np.ndarray:
+def parse_res_file(res_file_content: str) -> list[tuple[int, float, float]]:
     """
      Parse the result of a .res file execution.
 
@@ -129,10 +127,31 @@ def parse_res_file(res_file_content: str) -> np.ndarray:
     -197.333891140300   -197.329711152500      0.000000000000      0.000000000000      0.000000000000    2.62298   -0.19002    2.81300   P_TT/PBEP_GX/PBE
     ...
     """
-    data = [
-        (float(line.split()[7]), float(line.split()[5]))
-        for line in res_file_content.splitlines()
-        if line.strip()
-    ]
-    result_array = np.array(data)
-    return result_array
+    data: list[tuple[int, float, float]] = []
+    index = -1
+    for line in res_file_content.splitlines():
+        line = line.strip()
+        if line:
+            tokens = line.split()
+        else:
+            continue
+        # Let the index start from 0, and increment it only for non-empty lines
+        index += 1
+        if len(tokens) >= 8:
+            try:
+                ref_energy = float(tokens[7].strip())
+                comp_energy = float(tokens[5].strip())
+                if abs(ref_energy - comp_energy) > 750:
+                    print(
+                        f"Warning: Large difference between reference and computed energy: {line}"
+                    )
+                    print("Skipping this line.")
+                    continue
+                data.append((index, ref_energy, comp_energy))
+            except ValueError:
+                print("Conversion to floats not possible for line:", line)
+                continue
+        else:
+            print("Not enough tokens in line:", line)
+            continue
+    return data

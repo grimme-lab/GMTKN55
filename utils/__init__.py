@@ -13,6 +13,9 @@ from .constants import (
     BARRIER_DIRS,
     INTERMOL_NCI_DIRS,
     INTRAMOL_NCI_DIRS,
+    BOHR2AA,
+    AA2BOHR,
+    HARTREE_TO_KCAL,
 )
 
 __all__ = [
@@ -31,4 +34,7 @@ __all__ = [
     "BARRIER_DIRS",
     "INTERMOL_NCI_DIRS",
     "INTRAMOL_NCI_DIRS",
+    "HARTREE_TO_KCAL",
+    "BOHR2AA",
+    "AA2BOHR",
 ]

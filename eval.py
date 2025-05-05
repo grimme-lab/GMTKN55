@@ -198,37 +198,33 @@ def evaluate_subset(
             # change working directory to the subset directory
             cwd=Path(subset).resolve(),
         )
-        try:
-            ref_comp_array: np.ndarray = parse_res_file(result.stdout)
-        except (IndexError, ValueError):
-            print(
-                f"Error parsing res file {res_file} for {subset}.\n"
-                + "Original output:"
-            )
-            print(result.stdout)
-            print(result.stderr)
-            # assign an empty array to ref_comp_array
-            ref_comp_array = np.array([])
+        res_data: list[tuple[int, float, float]] = parse_res_file(result.stdout)
     else:
         print(f"No valid reactions found in {subset}.")
-        ref_comp_array = np.array([])
+        res_data = []
     # 4. Add the results to the dataframe
     # before: Check if systems_per_reaction and ref_comp_array have the same length
-    if len(reactions) != len(ref_comp_array):
-        raise ValueError(
-            f"The number of systems per reaction ({len(reactions)}) "
-            + f"does not match the number of reference values ({len(ref_comp_array)})."
+    if len(reactions) != len(res_data):
+        print(
+            f"Warning for subset {subset}: "
+            + f"The number of reactions ({len(reactions)}) "
+            + f"does not match the number of reference values ({len(res_data)})."
         )
+        # check which index is missing
+        missing_indices = set(range(len(reactions))) - {index for index, *_ in res_data}
+        for miss_index in missing_indices:
+            print(
+                f"Reaction '{reactions[miss_index]}' with stochiometry "
+                + f"'{stochiometries[miss_index]}' could not be parsed."
+            )
     # NOTE: Special case for BH76RC
     if res_file == ".resRC" and subset == "BH76":
         subset = subset + "RC"
+    rows: list[list] = []
+    for index, ref, comp in res_data:
+        rows.append([subset, reactions[index], stochiometries[index], ref, comp])
     new_rows = pd.DataFrame(
-        [
-            [subset, reaction, stochiometry, ref, comp]
-            for reaction, stochiometry, (ref, comp) in zip(
-                reactions, stochiometries, ref_comp_array
-            )
-        ],
+        rows,
         columns=["Subset", "Reaction", "Stochiometry", "ReferenceValue", "MethodValue"],
     ).astype(
         {
