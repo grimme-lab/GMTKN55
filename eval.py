@@ -6,7 +6,6 @@ import subprocess as sp
 from pathlib import Path
 import argparse
 
-import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
@@ -17,7 +16,7 @@ from utils import (
     get_molecules_from_filesystem,
     parse_element_list,
     check_molecule_composition,
-    wtmad2,
+    stats,
 )
 
 
@@ -95,7 +94,7 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def parse_required_elements(args: argparse.Namespace) -> list[tuple]:
+def parse_required_elements(parsed_args: argparse.Namespace) -> list[tuple]:
     """
     required elements is a list of tuples
     one tuple per set of required elements that must be contained at the same time
@@ -103,19 +102,19 @@ def parse_required_elements(args: argparse.Namespace) -> list[tuple]:
     [(54),(55)] means that either 54 or 55 must be contained in the molecule
     """
     required_elements: list[tuple] = []
-    if args.required_elements_all and args.required_elements_one:
+    if parsed_args.required_elements_all and parsed_args.required_elements_one:
         raise ValueError(
             "Both --required-elements-all and "
             + "--required-elements-one cannot be provided at the same time."
         )
-    if args.required_elements_all:
-        required_elements_all = parse_element_list(args.required_elements_all)
+    if parsed_args.required_elements_all:
+        required_elements_all = parse_element_list(parsed_args.required_elements_all)
         required_elements.append(tuple(required_elements_all))
-    if args.required_elements_one:
-        required_elements_one = parse_element_list(args.required_elements_one)
+    if parsed_args.required_elements_one:
+        required_elements_one = parse_element_list(parsed_args.required_elements_one)
         for elem in required_elements_one:
             required_elements.append(tuple([elem]))
-    if args.verbosity > 0:
+    if parsed_args.verbosity > 0:
         print(f"Required elements: {required_elements}")
     return required_elements
 
@@ -244,21 +243,20 @@ def evaluate_subset(
     return new_rows
 
 
-def main() -> int:
+def main(parsed_args: argparse.Namespace) -> int:
     """
     Main function that is called when the script is executed
     from the command line.
     """
-    args = get_args()
-    verbosity = args.verbosity
-    required_elements = parse_required_elements(args)
-    allowed_elements = parse_element_list(args.allowed_elements)
+    verbosity = parsed_args.verbosity
+    required_elements = parse_required_elements(parsed_args)
+    allowed_elements = parse_element_list(parsed_args.allowed_elements)
     constrain_config = MoleculeConstraints(
         allowed_elements=allowed_elements,
         required_elements=required_elements,
-        min_charge=args.min_charge,
-        max_charge=args.max_charge,
-        max_uhf=args.max_uhf,
+        min_charge=parsed_args.min_charge,
+        max_charge=parsed_args.max_charge,
+        max_uhf=parsed_args.max_uhf,
     )
     if verbosity > 0:
         print(constrain_config)
@@ -280,8 +278,8 @@ def main() -> int:
                 verbosity=verbosity,
                 config=constrain_config,
                 subset=subset,
-                method=args.method,
-                res_format=args.format,
+                method=parsed_args.method,
+                res_format=parsed_args.format,
             )
             if subset == "BH76":
                 # NOTE: BH76 is a special case
@@ -291,8 +289,8 @@ def main() -> int:
                     verbosity=verbosity,
                     config=constrain_config,
                     subset=subset,
-                    method=args.method,
-                    res_format=args.format,
+                    method=parsed_args.method,
+                    res_format=parsed_args.format,
                     res_file=".resRC",
                 )
         except Exception as e:
@@ -314,19 +312,35 @@ def main() -> int:
             None,
         ):
             print(gmtkn_results)
-    if args.write_to_csv:
-        # write the results to a csv file
-        gmtkn_results.to_csv(f"{args.method}.csv", index=False, float_format="%.6f")
-        if verbosity > 0:
-            print(
-                f"Results written to {args.method}.csv with {len(gmtkn_results)} entries."
-            )
 
     # calculate the statistics
-    wtmad2s, maes = wtmad2(gmtkn_results, verbosity)
+    wtmad2s, subset_statistics = stats(gmtkn_results, verbosity)
+    if parsed_args.write_to_csv:
+        # write the results to a csv file
+        gmtkn_results.to_csv(
+            f"{parsed_args.method}_reactions.csv", index=False, float_format="%.6f"
+        )
+        # write the statistics to a csv file
+        pd.DataFrame.from_dict(subset_statistics, orient="index").to_csv(
+            f"{parsed_args.method}_statistics.csv", index=True, float_format="%.6f"
+        )
+        pd.DataFrame.from_dict(wtmad2s, orient="index", columns=["WTMAD-2"]).to_csv(
+            f"{parsed_args.method}_wtmad2.csv", index=True, float_format="%.6f"
+        )
+        if verbosity > 0:
+            print(
+                f"\nDetailed results written to '{parsed_args.method}_reactions.csv' "
+                + f"with {len(gmtkn_results)} entries."
+            )
+            print(
+                f"Statistics written to '{parsed_args.method}_statistics.csv' and "
+                + f"'{parsed_args.method}_wtmad2.csv'."
+            )
 
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    # Execute the main function and exit with its return code
+    args = get_args()
+    raise SystemExit(main(args))

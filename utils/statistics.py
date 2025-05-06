@@ -15,9 +15,28 @@ from .constants import (
 )
 
 
-def wtmad2(
+def statistical_measures(subset_data: pd.DataFrame) -> dict[str, int | float]:
+    """
+    Calculate the statistics for a subset of the dataframe.
+    """
+    errors = subset_data["ReferenceValue"] - subset_data["MethodValue"]
+    stats_dict = {
+        "N": len(subset_data),
+        "MeanAbsRef": np.mean(np.abs(subset_data["ReferenceValue"])),
+        "MAE": np.mean(np.abs(errors)),
+        "MSE": np.mean(errors),
+        "STDDEV": np.std(errors, ddof=1),
+        "RMSD": np.sqrt(np.mean(errors**2)),
+        "MAX": np.max(errors),
+        "MIN": np.min(errors),
+        "ErrRange": np.max(errors) - np.min(errors),
+    }
+    return stats_dict
+
+
+def stats(
     df: pd.DataFrame, verbosity: int
-) -> tuple[dict[str, float], dict[str, float]]:
+) -> tuple[dict[str, float], dict[str, dict[str, int | float]]]:
     r"""
     Calculate the WTMAD-2 of the dataframe.
 
@@ -34,34 +53,28 @@ def wtmad2(
     wtmad2_dict: dict[str, float] = {}
 
     # Calculate average deltaE_i for each subset
-    mean_reference_energies: dict[str, float] = {}
-    number_reactions: dict[str, int] = {}
-    mads: dict[str, float] = {}
+    subset_stats: dict[str, dict[str, int | float]] = {}
 
     for subset in df["Subset"].unique():
         subset_df = df[df["Subset"] == subset]
-        number_reactions[subset] = len(subset_df)
-        mean_reference_energies[subset] = np.mean(np.abs(subset_df["ReferenceValue"]))
-        mads[subset] = np.mean(
-            np.abs(subset_df["ReferenceValue"] - subset_df["MethodValue"])
-        )
+        subset_stats[subset] = statistical_measures(subset_df)
 
-    total_number_reactions = sum(number_reactions.values())
+    total_number_reactions = sum(stats["N"] for stats in subset_stats.values())
     if total_number_reactions == 0:
         raise ValueError("No reactions found in the dataset.")
 
     average_mean_reference_energy: float = float(
-        np.mean(list(mean_reference_energies.values()))
+        np.mean([stats["MeanAbsRef"] for stats in subset_stats.values()])
     )
 
     # WTMAD-2 for the entire dataset
     wtmad2_dict["total"] = 0.0
     for subset in df["Subset"].unique():
         wtmad2_dict["total"] += (
-            number_reactions[subset]
+            subset_stats[subset]["N"]
             * average_mean_reference_energy
-            * mads[subset]
-            / mean_reference_energies[subset]
+            * subset_stats[subset]["MAE"]
+            / subset_stats[subset]["MeanAbsRef"]
         )
     wtmad2_dict["total"] /= total_number_reactions
 
@@ -72,12 +85,12 @@ def wtmad2(
     category_number_reactions: int = 0
     for subset in SMALL_REACTION_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += number_reactions[subset]
+            category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             wtmad2_dict["smallreactions"] += (
-                number_reactions[subset]
+                subset_stats[subset]["N"]
                 * average_mean_reference_energy
-                * mads[subset]
-                / mean_reference_energies[subset]
+                * subset_stats[subset]["MAE"]
+                / subset_stats[subset]["MeanAbsRef"]
             )
     if category_number_reactions == 0:
         print(
@@ -93,12 +106,12 @@ def wtmad2(
     category_number_reactions = 0
     for subset in LARGE_REACTION_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += number_reactions[subset]
+            category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             wtmad2_dict["largereactions"] += (
-                number_reactions[subset]
+                subset_stats[subset]["N"]
                 * average_mean_reference_energy
-                * mads[subset]
-                / mean_reference_energies[subset]
+                * subset_stats[subset]["MAE"]
+                / subset_stats[subset]["MeanAbsRef"]
             )
     if category_number_reactions == 0:
         print(
@@ -114,12 +127,12 @@ def wtmad2(
     category_number_reactions = 0
     for subset in BARRIER_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += number_reactions[subset]
+            category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             wtmad2_dict["barrierheights"] += (
-                number_reactions[subset]
+                subset_stats[subset]["N"]
                 * average_mean_reference_energy
-                * mads[subset]
-                / mean_reference_energies[subset]
+                * subset_stats[subset]["MAE"]
+                / subset_stats[subset]["MeanAbsRef"]
             )
     if category_number_reactions == 0:
         print(
@@ -139,13 +152,13 @@ def wtmad2(
     nci_number_reactions = 0
     for subset in INTERMOL_NCI_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += number_reactions[subset]
-            nci_number_reactions += number_reactions[subset]
+            category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
+            nci_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             added_error = (
-                number_reactions[subset]
+                subset_stats[subset]["N"]
                 * average_mean_reference_energy
-                * mads[subset]
-                / mean_reference_energies[subset]
+                * subset_stats[subset]["MAE"]
+                / subset_stats[subset]["MeanAbsRef"]
             )
             wtmad2_dict["intermolecular"] += added_error
             wtmad2_dict["all_nci"] += added_error
@@ -163,13 +176,13 @@ def wtmad2(
     category_number_reactions = 0
     for subset in INTRAMOL_NCI_DIRS:
         if subset in df["Subset"].unique():
-            category_number_reactions += number_reactions[subset]
-            nci_number_reactions += number_reactions[subset]
+            category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
+            nci_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             added_error = (
-                number_reactions[subset]
+                subset_stats[subset]["N"]
                 * average_mean_reference_energy
-                * mads[subset]
-                / mean_reference_energies[subset]
+                * subset_stats[subset]["MAE"]
+                / subset_stats[subset]["MeanAbsRef"]
             )
             wtmad2_dict["intramolecular"] += added_error
             wtmad2_dict["all_nci"] += added_error
@@ -195,12 +208,13 @@ def wtmad2(
         print("\n### WTMAD-2 ###")
         if verbosity > 1:
             print("\nAdditional statistics:")
-            print("   Subset    :   N_i   |  <|ΔE|>_i  |  MAD_i")
+            print("   Subset    :   N_i   |  <|ΔE|>_i  |  MAE_i")
             print("   --------- : ------- | ----------- | --------")
             for subset in df["Subset"].unique():
                 print(
-                    f"   {subset:<10}: {number_reactions[subset]:<7} | "
-                    + f"{mean_reference_energies[subset]:<11.3f} | {mads[subset]:<8.3f}"
+                    f"   {subset:<10}: {subset_stats[subset]['N']:<7} | "
+                    + f"{subset_stats[subset]['MeanAbsRef']:<11.3f} | "
+                    + f"{subset_stats[subset]['MAE']:<8.3f}"
                 )
             print("   --------------------------------------------")
             print(
@@ -218,4 +232,4 @@ def wtmad2(
         print(f"{'Intramolecular NCI':<22}: {wtmad2_dict['intramolecular']:8.3f}")
         print(f"{'All NCI':<22}: {wtmad2_dict['all_nci']:8.3f}")
 
-    return wtmad2_dict, mads
+    return wtmad2_dict, subset_stats
