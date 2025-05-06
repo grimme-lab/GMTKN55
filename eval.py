@@ -198,17 +198,19 @@ def evaluate_subset(
             # change working directory to the subset directory
             cwd=Path(subset).resolve(),
         )
-        res_data: list[tuple[int, float, float]] = parse_res_file(result.stdout)
+        res_data: list[tuple[int, float, float]] = parse_res_file(
+            result.stdout, verbosity
+        )
     else:
         print(f"No valid reactions found in {subset}.")
         res_data = []
     # 4. Add the results to the dataframe
     # before: Check if systems_per_reaction and ref_comp_array have the same length
-    if len(reactions) != len(res_data):
+    if len(reactions) != len(res_data) and verbosity > 0:
         print(
-            f"Warning for subset {subset}: "
-            + f"The number of reactions ({len(reactions)}) "
-            + f"does not match the number of reference values ({len(res_data)})."
+            f"Warning for subset {subset}:\n"
+            + f"The formal number of reactions ({len(reactions)}) in subset {subset} "
+            + f"does not match the number of evaluated reactions ({len(res_data)})."
         )
         # check which index is missing
         missing_indices = set(range(len(reactions))) - {index for index, *_ in res_data}

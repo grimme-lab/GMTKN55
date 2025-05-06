@@ -117,7 +117,9 @@ def filter_res_file(
     return result, list_reaction_species, list_stochiometries
 
 
-def parse_res_file(res_file_content: str) -> list[tuple[int, float, float]]:
+def parse_res_file(
+    res_file_content: str, verbosity: int
+) -> list[tuple[int, float, float]]:
     """
      Parse the result of a .res file execution.
 
@@ -142,16 +144,19 @@ def parse_res_file(res_file_content: str) -> list[tuple[int, float, float]]:
                 ref_energy = float(tokens[7].strip())
                 comp_energy = float(tokens[5].strip())
                 if abs(ref_energy - comp_energy) > 750:
-                    print(
-                        f"Warning: Large difference between reference and computed energy: {line}"
-                    )
-                    print("Skipping this line.")
+                    if verbosity > 1:
+                        print(
+                            "Skipping line due to excessively large difference "
+                            + f"between reference and computed energy: {line}"
+                        )
                     continue
                 data.append((index, ref_energy, comp_energy))
             except ValueError:
-                print("Conversion to floats not possible for line:", line)
+                if verbosity > 1:
+                    print("Conversion to floats not possible for line:", line)
                 continue
         else:
-            print("Not enough tokens in line:", line)
+            if verbosity > 1:
+                print("Not enough tokens in line:", line)
             continue
     return data
