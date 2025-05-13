@@ -7,6 +7,8 @@ from .filter_by_composition import (
 )
 from .statistics import stats
 from .constants import (
+    PSE_SYMBOLS,
+    PSE_NUMBERS,
     GMTKN55_DIRS,
     SMALL_REACTION_DIRS,
     LARGE_REACTION_DIRS,
@@ -29,6 +31,8 @@ __all__ = [
     "parse_res_file",
     "filter_res_file",
     "stats",
+    "PSE_SYMBOLS",
+    "PSE_NUMBERS",
     "SMALL_REACTION_DIRS",
     "LARGE_REACTION_DIRS",
     "BARRIER_DIRS",

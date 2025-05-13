@@ -19,7 +19,7 @@ def statistical_measures(subset_data: pd.DataFrame) -> dict[str, int | float]:
     """
     Calculate the statistics for a subset of the dataframe.
     """
-    errors = subset_data["ReferenceValue"] - subset_data["MethodValue"]
+    errors = subset_data["MethodValue"] - subset_data["ReferenceValue"]
     stats_dict = {
         "N": len(subset_data),
         "MeanAbsRef": np.mean(np.abs(subset_data["ReferenceValue"])),
@@ -55,7 +55,10 @@ def stats(
     # Calculate average deltaE_i for each subset
     subset_stats: dict[str, dict[str, int | float]] = {}
 
-    for subset in df["Subset"].unique():
+    # Benchmark subsets in the dataframe
+    subsets = df["Subset"].unique()
+
+    for subset in subsets:
         subset_df = df[df["Subset"] == subset]
         subset_stats[subset] = statistical_measures(subset_df)
 
@@ -69,7 +72,7 @@ def stats(
 
     # WTMAD-2 for the entire dataset
     wtmad2_dict["total"] = 0.0
-    for subset in df["Subset"].unique():
+    for subset in subsets:
         wtmad2_dict["total"] += (
             subset_stats[subset]["N"]
             * average_mean_reference_energy
@@ -84,7 +87,7 @@ def stats(
     wtmad2_dict["smallreactions"] = 0.0
     category_number_reactions: int = 0
     for subset in SMALL_REACTION_DIRS:
-        if subset in df["Subset"].unique():
+        if subset in subsets:
             category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             wtmad2_dict["smallreactions"] += (
                 subset_stats[subset]["N"]
@@ -105,7 +108,7 @@ def stats(
     wtmad2_dict["largereactions"] = 0.0
     category_number_reactions = 0
     for subset in LARGE_REACTION_DIRS:
-        if subset in df["Subset"].unique():
+        if subset in subsets:
             category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             wtmad2_dict["largereactions"] += (
                 subset_stats[subset]["N"]
@@ -126,7 +129,7 @@ def stats(
     wtmad2_dict["barrierheights"] = 0.0
     category_number_reactions = 0
     for subset in BARRIER_DIRS:
-        if subset in df["Subset"].unique():
+        if subset in subsets:
             category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             wtmad2_dict["barrierheights"] += (
                 subset_stats[subset]["N"]
@@ -151,7 +154,7 @@ def stats(
     category_number_reactions = 0
     nci_number_reactions = 0
     for subset in INTERMOL_NCI_DIRS:
-        if subset in df["Subset"].unique():
+        if subset in subsets:
             category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             nci_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             added_error = (
@@ -175,7 +178,7 @@ def stats(
     wtmad2_dict["intramolecular"] = 0.0
     category_number_reactions = 0
     for subset in INTRAMOL_NCI_DIRS:
-        if subset in df["Subset"].unique():
+        if subset in subsets:
             category_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             nci_number_reactions += subset_stats[subset]["N"]  # type: ignore[assignment]
             added_error = (
@@ -210,7 +213,7 @@ def stats(
             print("\nAdditional statistics:")
             print("   Subset    :   N_i   |  <|ΔE|>_i  |  MAE_i")
             print("   --------- : ------- | ----------- | --------")
-            for subset in df["Subset"].unique():
+            for subset in subsets:
                 print(
                     f"   {subset:<10}: {subset_stats[subset]['N']:<7} | "
                     + f"{subset_stats[subset]['MeanAbsRef']:<11.3f} | "
