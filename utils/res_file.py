@@ -85,12 +85,9 @@ def filter_res_file(
         stochiometry_start = tokens.index("x") + 1
         stochiometry_values = []
         for token in tokens[stochiometry_start:]:
-            if token.startswith("$"):
+            if token.startswith("$w"):
                 break
-            try:
-                stochiometry_values.append(int(token))
-            except ValueError:
-                continue
+            stochiometry_values.append(int(token))
 
         species: list[str] = []
         for token in species_tokens:
@@ -133,10 +130,9 @@ def parse_res_file(
     index = -1
     for line in res_file_content.splitlines():
         line = line.strip()
-        if line:
-            tokens = line.split()
-        else:
+        if not line:
             continue
+        tokens = line.split()
         # Let the index start from 0, and increment it only for non-empty lines
         index += 1
         if len(tokens) >= 8:

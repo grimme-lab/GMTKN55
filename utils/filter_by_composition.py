@@ -28,7 +28,7 @@ def parse_element_list(allowed_elements: str) -> list[int]:
             if end == "*" and start == "*":
                 raise ValueError("Both start and end cannot be wildcard '*'.")
             if end == "*":
-                end = 103  # Set to a the maximum atomic number in mindlessgen
+                end = 103  # Set to the maximum atomic number
             if start == "*":
                 start = 0
             set_allowed_elements.update(
