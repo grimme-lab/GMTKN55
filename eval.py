@@ -91,6 +91,12 @@ def get_args() -> argparse.Namespace:
         default=False,
         help="Write the detailed GMTKN55 results to a CSV file.",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        default=False,
+        help="Strict mode: Fail with an error if reactions cannot be evaluated unexpectedly.",
+    )
     return parser.parse_args()
 
 
@@ -156,6 +162,7 @@ def evaluate_subset(
     subset: str,
     method: str,
     res_format: int,
+    strictmode: bool = False,
     res_file: str = ".res",
 ) -> pd.DataFrame:
     """
@@ -197,9 +204,16 @@ def evaluate_subset(
             # change working directory to the subset directory
             cwd=Path(subset).resolve(),
         )
-        res_data: list[tuple[int, float, float]] = parse_res_file(
-            result.stdout, verbosity
-        )
+        try:
+            res_data: list[tuple[int, float, float]] = parse_res_file(
+                result.stdout, strictmode, verbosity
+            )
+        except ValueError as e:
+            print(
+                f"Errors while parsing the '.res' file output for subset {subset}. "
+                + "Aborting evaluation in strict mode."
+            )
+            raise e
     else:
         print(f"No valid reactions found in {subset}.")
         res_data = []
@@ -271,7 +285,18 @@ def main(parsed_args: argparse.Namespace) -> int:
     for subset, mol_list in tqdm(gmtkn_mol_dict.items(), desc="Evaluating subsets"):
         if verbosity > 2:
             print(f"\n### {subset} ####")
-        try:
+        gmtkn_results = evaluate_subset(
+            mols=mol_list,
+            dataframe=gmtkn_results,
+            verbosity=verbosity,
+            config=constrain_config,
+            subset=subset,
+            method=parsed_args.method,
+            res_format=parsed_args.format,
+            strictmode=parsed_args.strict,
+        )
+        if subset == "BH76":
+            # NOTE: BH76 is a special case
             gmtkn_results = evaluate_subset(
                 mols=mol_list,
                 dataframe=gmtkn_results,
@@ -280,22 +305,9 @@ def main(parsed_args: argparse.Namespace) -> int:
                 subset=subset,
                 method=parsed_args.method,
                 res_format=parsed_args.format,
+                strictmode=parsed_args.strict,
+                res_file=".resRC",
             )
-            if subset == "BH76":
-                # NOTE: BH76 is a special case
-                gmtkn_results = evaluate_subset(
-                    mols=mol_list,
-                    dataframe=gmtkn_results,
-                    verbosity=verbosity,
-                    config=constrain_config,
-                    subset=subset,
-                    method=parsed_args.method,
-                    res_format=parsed_args.format,
-                    res_file=".resRC",
-                )
-        except Exception as e:
-            print(f"Fatal error evaluating {subset}: {e}")
-            continue
 
     if verbosity > 0:
         print("\n### Results ###")

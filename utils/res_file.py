@@ -115,7 +115,7 @@ def filter_res_file(
 
 
 def parse_res_file(
-    res_file_content: str, verbosity: int
+    res_file_content: str, strictmode: bool, verbosity: int
 ) -> list[tuple[int, float, float]]:
     """
      Parse the result of a .res file execution.
@@ -139,20 +139,33 @@ def parse_res_file(
             try:
                 ref_energy = float(tokens[7].strip())
                 comp_energy = float(tokens[5].strip())
-                if abs(ref_energy - comp_energy) > 750:
-                    if verbosity > 1:
+                if abs(comp_energy - ref_energy) > 750:
+                    if verbosity > 1 and not strictmode:
                         print(
                             "Skipping line due to excessively large difference "
-                            + f"between reference and computed energy: {line}"
+                            + f"between computed and reference energy: {line}"
+                        )
+                    if strictmode:
+                        raise ValueError(
+                            "Failing evaluation due to excessively large difference "
+                            + f"between computed and reference energy: {line}"
                         )
                     continue
                 data.append((index, ref_energy, comp_energy))
-            except ValueError:
-                if verbosity > 1:
-                    print("Conversion to floats not possible for line:", line)
+            except ValueError as e:
+                if verbosity > 1 and not strictmode:
+                    print(
+                        f"Conversion to floats not possible for line: {line}. Error: {e}"
+                    )
+                if strictmode:
+                    raise ValueError(
+                        f"Conversion to floats not possible for line: {line}.\nAborting."
+                    ) from e
                 continue
         else:
-            if verbosity > 1:
+            if verbosity > 1 and not strictmode:
                 print("Not enough tokens in line:", line)
+            if strictmode:
+                raise ValueError("Not enough tokens in line: " + f"{line}.\nAborting.")
             continue
     return data
