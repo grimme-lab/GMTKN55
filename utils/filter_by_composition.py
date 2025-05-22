@@ -133,7 +133,7 @@ def check_molecule_composition(
     ):
         # check if the number of atoms is within the limits
         if (
-            molecule_constraints.min_num_atoms
+            molecule_constraints.min_num_atoms is not None
             and mol.num_atoms < molecule_constraints.min_num_atoms
         ):
             if verbosity > 2:
@@ -143,7 +143,7 @@ def check_molecule_composition(
                 )
             continue
         if (
-            molecule_constraints.max_num_atoms
+            molecule_constraints.max_num_atoms is not None
             and mol.num_atoms > molecule_constraints.max_num_atoms
         ):
             if verbosity > 2:
