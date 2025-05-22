@@ -4,6 +4,7 @@ from .filter_by_composition import (
     parse_element_list,
     molecule_has_required_elements,
     check_molecule_composition,
+    MoleculeConstraints,
 )
 from .statistics import stats
 from .constants import (
@@ -27,6 +28,7 @@ __all__ = [
     "parse_element_list",
     "molecule_has_required_elements",
     "check_molecule_composition",
+    "MoleculeConstraints",
     "GMTKN55_DIRS",
     "parse_res_file",
     "filter_res_file",
