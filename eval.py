@@ -16,6 +16,7 @@ from utils import (
     get_molecules_from_filesystem,
     parse_element_list,
     check_molecule_composition,
+    MoleculeConstraints,
     stats,
 )
 
@@ -80,6 +81,22 @@ def get_args() -> argparse.Namespace:
         + " Format example: `--max-uhf 2`",
     )
     parser.add_argument(
+        "--min-num-atoms",
+        type=int,
+        required=False,
+        default=None,
+        help="Minimum number of atoms for the molecules."
+        + " Format example: `--min-num-atoms 2`",
+    )
+    parser.add_argument(
+        "--max-num-atoms",
+        type=int,
+        required=False,
+        default=None,
+        help="Maximum number of atoms for the molecules."
+        + " Format example: `--max-num-atoms 10`",
+    )
+    parser.add_argument(
         "--method", type=str, required=True, default="", help="Method to evaluate"
     )
     parser.add_argument(
@@ -125,35 +142,6 @@ def parse_required_elements(parsed_args: argparse.Namespace) -> list[tuple]:
     return required_elements
 
 
-class MoleculeConstraints:
-    """
-    Class to hold the constraints for the molecules.
-    """
-
-    def __init__(
-        self,
-        allowed_elements: list[int],
-        required_elements: list[tuple],
-        min_charge: int | None,
-        max_charge: int | None,
-        max_uhf: int | None,
-    ) -> None:
-        self.allowed_elements = allowed_elements
-        self.required_elements = required_elements
-        self.min_charge = min_charge
-        self.max_charge = max_charge
-        self.max_uhf = max_uhf
-
-    def __str__(self) -> str:
-        return (
-            f"Allowed elements: {self.allowed_elements}\n"
-            f"Required elements: {self.required_elements}\n"
-            f"Minimal charge: {self.min_charge}\n"
-            f"Maximal charge: {self.max_charge}\n"
-            f"Maximal number of unpaired electrons: {self.max_uhf}\n"
-        )
-
-
 def evaluate_subset(
     mols: list[Molecule],
     dataframe: pd.DataFrame,
@@ -171,11 +159,7 @@ def evaluate_subset(
     allowed_mols = check_molecule_composition(
         mols,
         verbosity,
-        config.required_elements,
-        config.allowed_elements,
-        config.min_charge,
-        config.max_charge,
-        config.max_uhf,
+        config,
     )
     if verbosity > 2:
         for mol in allowed_mols:
@@ -271,6 +255,8 @@ def main(parsed_args: argparse.Namespace) -> int:
         min_charge=parsed_args.min_charge,
         max_charge=parsed_args.max_charge,
         max_uhf=parsed_args.max_uhf,
+        min_num_atoms=parsed_args.min_num_atoms,
+        max_num_atoms=parsed_args.max_num_atoms,
     )
     if verbosity > 0:
         print(constrain_config)
