@@ -96,3 +96,21 @@ The script prints:
 
 - Marcel Müller
 - Contributions welcome!
+
+## License
+
+This repository contains two parts with different licensing terms:
+
+- **Dataset (GMTKN55)**  
+  © 2017 Lars Goerigk, Andreas Hansen, Christoph Bauer, Stephan Ehrlich, Asim Najibi, Stefan Grimme, and co-authors.  
+  Licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).  
+  Use is permitted for both academic and industrial purposes, provided appropriate attribution is given.  
+  Please cite:  
+  *Goerigk, L.; Hansen, A.; Bauer, C.; Ehrlich, S.; Najibi, A.; Grimme, S. "A look at the density functional theory zoo with the advanced GMTKN55 database for general main group thermochemistry, kinetics and noncovalent interactions." Phys. Chem. Chem. Phys. 2017, 19, 32184–32215. DOI:10.1039/C7CP04913G.*
+
+- **Evaluation script (Python code)**  
+  © 2025 Marcel Müller  
+  Licensed under the [MIT License](./LICENSE).  
+  Free to use, modify, and redistribute without restriction.
+
+For full details, see the [LICENSE](./LICENSE) file.
