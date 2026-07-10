@@ -3,6 +3,13 @@
 This project provides a Python-based evaluation framework for computing WTMAD-2 and other statistical metrics on the [GMTKN55](https://pubs.rsc.org/en/content/articlelanding/2017/cp/c7cp04913g) benchmark suite.
 It processes `.res` files, filters molecules based on chemical constraints, and parses output to compute evaluation metrics such as WTMAD-2, MAE, and more.
 
+## Reference update
+
+This branch contains selected reference-value updates, spin-contamination
+exclusions, and a Python implementation of the GMTKN55 evaluation workflow.
+
+See [`REFERENCE_UPDATES.md`](REFERENCE_UPDATES.md) for details.
+
 ## 📦 Features
 
 - Automatically parses GMTKN55 benchmark subsets from a local filesystem
@@ -71,13 +78,14 @@ python eval.py --method mydft --verbosity 2 --write-to-csv --allowed-elements '1
 
 ## 📊 Output
 
-With `--write-to-csv`, the script will generate a file: `<args.format>.csv` containing columns:
+With `--write-to-csv`, the script generates three files:
 
-- Subset
-- Reaction
-- Stochiometry
-- ReferenceValue
-- MethodValue
+- `<METHOD>_reactions.csv`
+- `<METHOD>_statistics.csv`
+- `<METHOD>_wtmad2.csv`
+
+The reaction-level CSV contains the subset, reaction index, stoichiometry,
+reference value, and calculated method value.
 
 **Statistics**
 

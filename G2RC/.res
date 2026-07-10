@@ -28,7 +28,9 @@ $tmer    56/$f     1/$f    21/$f  13/$f   x  -1 -3 1 2 $w     -61.67
 $tmer    30/$f     1/$f    13/$f  8/$f    x  -1 -3 1 1 $w     -65.15 
 $tmer    73/$f     1/$f    39/$f  13/$f   x  -1 -1 1 1 $w     -68.90 
 $tmer    68/$f     1/$f    34/$f  13/$f   x  -1 -1 1 1 $w     -81.21 
-$tmer    26/$f     6/$f    82/$f          x   -1 -1 1  $w    -109.11 
+
 $tmer     1/$f     39/$f   14/$f          x   -1 -1 2  $w    -135.40 
 $tmer    25/$f     94/$f                  x  -3  1     $w    -154.04 
 $tmer    23/$f     39/$f   24/$f          x   -1 -1 2  $w    -216.11 
+
+# The entry (26/$f 6/$f 82/$f x -1 -1 1 $w -109.11) was removed because structure 6 showed significant spin contamination.

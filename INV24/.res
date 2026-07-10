@@ -18,7 +18,7 @@ $tmer Thioether{,_TS}/$f   x -1 1 $w 74.2   #W2-F12
 $tmer NMe3{,_TS}/$f   x -1 1 $w 9.7      #W2-F12
 $tmer NCl3{,_TS}/$f   x -1 1 $w 18.9     #W2-F12
 $tmer PMe3{,_TS}/$f   x -1 1 $w 43.2    #W2-F12
-$tmer PCl3{,_TS}/$f   x -1 1 $w 79.7    #W2-F12
+
 $tmer PH2Ph{,_TS}/$f   x -1 1 $w 31.2 #W2-F12  
 $tmer PPh3{,_TS}/$f   x -1 1 $w 29.3 #DLPNO-CCSD(T)/CBS(def2-TZVPP,def2-QZVPP) 
 #inversion between ring conformations
@@ -37,3 +37,5 @@ $tmer Triazasumanene{,_TS}/$f x -1 1 $w 42.3  #DLPNO-CCSD(T)/CBS(def2-TZVPP,def2
 $tmer BN_Sumanene{,_TS}/$f x -1 1 $w 27.2 #DLPNO-CCSD(T)/CBS(def2-TZVPP,def2-QZVPP)
 $tmer Tetrabenzopyracylene{,_TS}/$f x -1 1 $w 8.4 #DLPNO-CCSD(T)/CBS(def2-TZVPP,def2-QZVPP)
 $tmer Triindenotriphenylene{,_TS}/$f x -1 1 $w 68.6  #DLPNO-CCSD(T)/CBS(def2-TZVPP,def2-QZVPP)
+
+# # The PCl3 entry was removed because PCl3_TS showed significant spin contamination.

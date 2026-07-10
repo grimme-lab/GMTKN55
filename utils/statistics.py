@@ -209,6 +209,14 @@ def stats(
 
     if verbosity > 0:
         print("\n### WTMAD-2 ###")
+        print(
+            "WTMAD-2 = (1 / sum_i N_i) * "
+            + "sum_i N_i * (S / <|Delta E|>_i) * MAD_i"
+        )
+        print(
+            "WTMAD-2 scaling constant = mean_i(<|Delta E|>_i) "
+            + f"= {average_mean_reference_energy:.3f} kcal/mol"
+        )
         if verbosity > 1:
             print("\nAdditional statistics:")
             print("   Subset    :   N_i   |  <|ΔE|>_i  |  MAE_i")
@@ -234,5 +242,4 @@ def stats(
         print(f"{'Intermolecular NCI':<22}: {wtmad2_dict['intermolecular']:8.3f}")
         print(f"{'Intramolecular NCI':<22}: {wtmad2_dict['intramolecular']:8.3f}")
         print(f"{'All NCI':<22}: {wtmad2_dict['all_nci']:8.3f}")
-
     return wtmad2_dict, subset_stats
