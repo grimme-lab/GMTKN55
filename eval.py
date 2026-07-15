@@ -1,24 +1,28 @@
+#!/usr/bin/env python3
 """
 Python script that evaluates GMTKN55.
 """
 
+import argparse
 import subprocess as sp
 from pathlib import Path
-import argparse
 
 import pandas as pd
 from tqdm import tqdm
 
-from utils import (
-    filter_res_file,
-    parse_res_file,
+from _utils import (
     Molecule,
+    MoleculeConstraints,
+    check_molecule_composition,
+    filter_res_file,
     get_molecules_from_filesystem,
     parse_element_list,
-    check_molecule_composition,
-    MoleculeConstraints,
+    parse_res_file,
     stats,
 )
+
+OUT_DIR = Path(__file__).parent.resolve() / "_results"
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def get_args() -> argparse.Namespace:
@@ -63,14 +67,16 @@ def get_args() -> argparse.Namespace:
         type=int,
         required=False,
         default=None,
-        help="Minimum charge for the molecules." + "Format example: `--min-charge -1`",
+        help="Minimum charge for the molecules."
+        + "Format example: `--min-charge -1`",
     )
     parser.add_argument(
         "--max-charge",
         type=int,
         required=False,
         default=None,
-        help="Maximum charge for the molecules." + "Format example: `--max-charge 2`",
+        help="Maximum charge for the molecules."
+        + "Format example: `--max-charge 2`",
     )
     parser.add_argument(
         "--max-uhf",
@@ -97,10 +103,18 @@ def get_args() -> argparse.Namespace:
         + " Format example: `--max-num-atoms 10`",
     )
     parser.add_argument(
-        "--method", type=str, required=True, default="", help="Method to evaluate"
+        "--method",
+        type=str,
+        required=True,
+        default="",
+        help="Method to evaluate",
     )
     parser.add_argument(
-        "--format", type=int, required=False, default=13, help="Format to evaluate"
+        "--format",
+        type=int,
+        required=False,
+        default=13,
+        help="Format to evaluate",
     )
     parser.add_argument(
         "--write-to-csv",
@@ -131,10 +145,14 @@ def parse_required_elements(parsed_args: argparse.Namespace) -> list[tuple]:
             + "--required-elements-one cannot be provided at the same time."
         )
     if parsed_args.required_elements_all:
-        required_elements_all = parse_element_list(parsed_args.required_elements_all)
+        required_elements_all = parse_element_list(
+            parsed_args.required_elements_all
+        )
         required_elements.append(tuple(required_elements_all))
     if parsed_args.required_elements_one:
-        required_elements_one = parse_element_list(parsed_args.required_elements_one)
+        required_elements_one = parse_element_list(
+            parsed_args.required_elements_one
+        )
         for elem in required_elements_one:
             required_elements.append(tuple([elem]))
     if parsed_args.verbosity > 0:
@@ -210,7 +228,9 @@ def evaluate_subset(
             + f"does not match the number of evaluated reactions ({len(res_data)})."
         )
         # check which index is missing
-        missing_indices = set(range(len(reactions))) - {index for index, *_ in res_data}
+        missing_indices = set(range(len(reactions))) - {
+            index for index, *_ in res_data
+        }
         for miss_index in missing_indices:
             print(
                 f"Reaction '{reactions[miss_index]}' with stochiometry "
@@ -221,10 +241,18 @@ def evaluate_subset(
         subset = subset + "RC"
     rows: list[list] = []
     for index, ref, comp in res_data:
-        rows.append([subset, reactions[index], stochiometries[index], ref, comp])
+        rows.append(
+            [subset, reactions[index], stochiometries[index], ref, comp]
+        )
     new_rows = pd.DataFrame(
         rows,
-        columns=["Subset", "Reaction", "Stochiometry", "ReferenceValue", "MethodValue"],
+        columns=[
+            "Subset",
+            "Reaction",
+            "Stochiometry",
+            "ReferenceValue",
+            "MethodValue",
+        ],
     ).astype(
         {
             "Subset": str,
@@ -265,10 +293,18 @@ def main(parsed_args: argparse.Namespace) -> int:
         print("## Analyzing molecules from filesystem ##")
     gmtkn_mol_dict = get_molecules_from_filesystem(verbosity=verbosity)
     gmtkn_results = pd.DataFrame(
-        columns=["Subset", "Reaction", "Stochiometry", "ReferenceValue", "MethodValue"]
+        columns=[
+            "Subset",
+            "Reaction",
+            "Stochiometry",
+            "ReferenceValue",
+            "MethodValue",
+        ]
     )
     # add all molecules from gmtkn_mol_dict to all_mols
-    for subset, mol_list in tqdm(gmtkn_mol_dict.items(), desc="Evaluating subsets"):
+    for subset, mol_list in tqdm(
+        gmtkn_mol_dict.items(), desc="Evaluating subsets"
+    ):
         if verbosity > 2:
             print(f"\n### {subset} ####")
         gmtkn_results = evaluate_subset(
@@ -316,23 +352,33 @@ def main(parsed_args: argparse.Namespace) -> int:
     if parsed_args.write_to_csv:
         # write the results to a csv file
         gmtkn_results.to_csv(
-            f"{parsed_args.method}_reactions.csv", index=False, float_format="%.6f"
+            OUT_DIR / f"{parsed_args.method}_reactions.csv",
+            index=False,
+            float_format="%.6f",
         )
         # write the statistics to a csv file
         pd.DataFrame.from_dict(subset_statistics, orient="index").to_csv(
-            f"{parsed_args.method}_statistics.csv", index=True, float_format="%.6f"
+            OUT_DIR / f"{parsed_args.method}_statistics.csv",
+            index=True,
+            float_format="%.6f",
         )
-        pd.DataFrame.from_dict(wtmad2s, orient="index", columns=["WTMAD-2"]).to_csv(
-            f"{parsed_args.method}_wtmad2.csv", index=True, float_format="%.6f"
+        pd.DataFrame.from_dict(
+            wtmad2s, orient="index", columns=["WTMAD-2"]
+        ).to_csv(
+            OUT_DIR / f"{parsed_args.method}_wtmad2.csv",
+            index=True,
+            float_format="%.6f",
         )
         if verbosity > 0:
             print(
-                f"\nDetailed results written to '{parsed_args.method}_reactions.csv' "
+                "\nDetailed results written to "
+                f"'{OUT_DIR / f'{parsed_args.method}_reactions.csv'}' "
                 + f"with {len(gmtkn_results)} entries."
             )
             print(
-                f"Statistics written to '{parsed_args.method}_statistics.csv' and "
-                + f"'{parsed_args.method}_wtmad2.csv'."
+                "Statistics written to "
+                f"'{OUT_DIR / f'{parsed_args.method}_statistics.csv'}' and "
+                f"'{OUT_DIR / f'{parsed_args.method}_wtmad2.csv'}'."
             )
 
     return 0
