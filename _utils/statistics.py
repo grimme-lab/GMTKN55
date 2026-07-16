@@ -211,20 +211,23 @@ def stats(
         print("\n### WTMAD-2 ###")
         if verbosity > 1:
             print("\nAdditional statistics:")
-            print("   Subset    :   N_i   |  <|ΔE|>_i  |  MAE_i")
-            print("   --------- : ------- | ----------- | --------")
+            print("   Subset    :   N_i   |  <|ΔE|>_i  |  MAE_i  |  MD_i   |  Max_i  |  Min_i")
+            print("   --------- : ------- | ----------- | -------- | -------- | -------- | --------")
             for subset in subsets:
                 print(
                     f"   {subset:<10}: {subset_stats[subset]['N']:<7} | "
                     + f"{subset_stats[subset]['MeanAbsRef']:<11.3f} | "
-                    + f"{subset_stats[subset]['MAE']:<8.3f}"
+                    + f"{subset_stats[subset]['MAE']:<8.3f} | "
+                    + f"{subset_stats[subset]['MSE']:<8.3f} | "
+                    + f"{subset_stats[subset]['MAX']:<8.3f} | "
+                    + f"{subset_stats[subset]['MIN']:<8.3f}"
                 )
-            print("   --------------------------------------------")
+            print("   " + "-" * 77)
             print(
                 f"   Average <|ΔE|> : {average_mean_reference_energy:.3f} "
                 + f"| Total N: {total_number_reactions}"
             )
-            print("   --------------------------------------------")
+            print("   " + "-" * 77)
         print(f"\n{'Subset':<22}:  WTMAD-2")
         print("-" * 22 + ": --------")
         print(f"{'Total':<22}: {wtmad2_dict['total']:8.3f}")

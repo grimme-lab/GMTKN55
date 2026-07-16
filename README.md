@@ -1,3 +1,9 @@
+**IMPORTANT**: The [`v1`](https://github.com/grimme-lab/GMTKN55/tree/v1) branch aims to preserve the [original GMTKN55 publication](https://pubs.rsc.org/en/content/articlelanding/2017/cp/c7cp04913g).
+The [`v2`](https://github.com/grimme-lab/GMTKN55/tree/v2) branch contains newer reference values and removes bad (e.g. spin-contaminated) data points.
+We recommend using [`v2`](https://github.com/grimme-lab/GMTKN55/tree/v2) as it barely changes the original statistics.
+
+<br>
+
 # GMTKN55 Benchmark Evaluator
 
 This project provides a Python-based evaluation framework for computing WTMAD-2 and other statistical metrics on the [GMTKN55](https://pubs.rsc.org/en/content/articlelanding/2017/cp/c7cp04913g) benchmark suite.
