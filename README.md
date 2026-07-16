@@ -1,4 +1,8 @@
-**IMPORTANT**: The [`v1`](https://github.com/grimme-lab/GMTKN55/tree/v1) branch aims to preserve the [original GMTKN55 publication](https://pubs.rsc.org/en/content/articlelanding/2017/cp/c7cp04913g).
+**IMPORTANT**
+
+The [`v1`](https://github.com/grimme-lab/GMTKN55/tree/v1) branch aims to preserve the [original GMTKN55 publication](https://pubs.rsc.org/en/content/articlelanding/2017/cp/c7cp04913g).
+We only corrected the average in the MB16-43 benchmark set, changing the overall average from 56.84 reported in the paper to 57.82.
+
 The [`v2`](https://github.com/grimme-lab/GMTKN55/tree/v2) branch contains newer reference values and removes bad (e.g. spin-contaminated) data points.
 We recommend using [`v2`](https://github.com/grimme-lab/GMTKN55/tree/v2) as it barely changes the original statistics.
 
@@ -20,7 +24,11 @@ It processes `.res` files, filters molecules based on chemical constraints, and 
 
 ## 🛠 Requirements
 
-Install dependencies using conda:
+The Python script requires the [Fortran energy reader](https://github.com/grimme-lab/tmer2) to be in the `PATH`.
+This binary reads the output files and calculates the reaction energies.
+The Python script computes the statistics and allows filtering.
+
+Install the Python dependencies using conda:
 
 ```bash
 conda env create -f environment.yaml
@@ -39,7 +47,7 @@ The main dependencies are:
 ```
 GMTKN55/
 ├── eval.py                  # Main entry point for evaluating subsets
-├── utils/                   # Contains all Python source code beyond the central eval.py script
+├── _utils/                  # Contains all Python source code beyond the central eval.py script
 │   ├── __init__.py
 │   ├── statistics.py        # WTMAD-2 and statistical calculations
 │   ├── constants.py         # Constant data
