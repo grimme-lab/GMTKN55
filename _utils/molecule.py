@@ -754,7 +754,10 @@ def get_molecules_from_filesystem(verbosity: int) -> dict[str, list[Molecule]]:
             unit="molecule",
             disable=hide_progress,
         ):
-            mol = Molecule.read_mol_from_file(mol_dir / "struc.xyz")
+            xyz_path = mol_dir / "struc.xyz"
+            if not xyz_path.exists():
+                xyz_path = mol_dir / "mol.xyz"
+            mol = Molecule.read_mol_from_file(xyz_path)
             # mol.name = dir_name + "_" + mol_dir.name
             mol.name = mol_dir.name
             # check if the directory contains a ".CHRG" file
