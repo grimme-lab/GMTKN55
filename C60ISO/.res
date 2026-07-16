@@ -16,7 +16,8 @@ $tmer {1,7}/$f  x -1 1 $w 106.46
 
 $tmer {1,9}/$f  x -1 1 $w 136.12
 $tmer {1,10}/$f x -1 1 $w 158.39
-#CBS*: newly developed CBS extrapolation scheme + TCutPairs 1e-5 Eh DLPNO-CCSD(T)
-##est. error: +/-1.0 [kcal/mol] (conservatively)
-##with ORCA prerelease 3.1
+
+##Method: PNO-LCCSD(T*)-F12b/VDZ-F12′, augmented by corrections for core correlation,
+basis-set incompleteness, PNO-space incompleteness, and continued-fraction higher-order excitations.
+
 ##Entries 6 and 8 were removed due to spin contamination.
