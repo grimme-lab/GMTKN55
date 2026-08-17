@@ -7,14 +7,15 @@ fi
 f=$1
 w=$2
 
+# W3Lite-F12 values from J. Phys. Chem. A (2019) 123 (31): 6720–6732. (doi:10.1021/acs.jpca.9b04611)
 #peri
-$tmer Cyclobutene/$f        TS1/$f  x               -1  1   $w 35.3 
-$tmer cis-135-Hexatriene/$f     TS2/$f x          -1  1   $w 30.8
+$tmer Cyclobutene/$f        TS1/$f  x               -1  1   $w 35.01  # W3
+$tmer cis-135-Hexatriene/$f     TS2/$f x          -1  1   $w 31.00  # W3
 $tmer ortho-xylylene/$f    TS3/$f         x         -1  1   $w 28.1 
-$tmer 13-Pentadiene/$f     TS4/$f         x        -1  1   $w 39.7     
-$tmer 13-Cyclopentadiene/$f TS5/$f x               -1  1   $w 28.3 
-$tmer 15-Hexadiene/$f TS6/$f x                     -1  1   $w 35.8 
-$tmer 13-Butadiene/$f Ethylene/$f TS7/$f x            -1 -1 1 $w 22.3     
+$tmer 13-Pentadiene/$f     TS4/$f         x        -1  1   $w 39.87  # W3
+$tmer 13-Cyclopentadiene/$f TS5/$f x               -1  1   $w 28.49  # W3
+$tmer 15-Hexadiene/$f TS6/$f x                     -1  1   $w 37.12  # W3
+$tmer 13-Butadiene/$f Ethylene/$f TS7/$f x            -1 -1 1 $w 22.44  # W3
 $tmer 13-Cyclopentadiene/$f Ethylene/$f  TS8/$f x     -1 -1 1 $w 18.0 
 $tmer 13-Cyclopentadiene/$f  TS11/$f x              -2  1  $w 14.5 
 $tmer Cis-triscyclopropacyclohexane/$f  TS9/$f x     -1  1  $w 26.4 
