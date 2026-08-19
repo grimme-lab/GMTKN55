@@ -8,16 +8,20 @@ evaluation workflow.
 
 Updated reference values are included for:
 
-* `C60ISO`
-* `ISOL24`
+* `C60ISO` (https://doi.org/10.26434/chemrxiv.15003369/v1)
+* `ISOL24` (https://doi.org/10.1021/acs.jctc.3c00270)
 * `UPU23`
-* `S66`
+* `S66` (https://doi.org/10.1080/00268976.2022.2109526)
+* `G2IP`, `G2EA`
+* `WATER27` (https://doi.org/10.1021/acs.jctc.6b01046 and https://arxiv.org/abs/2308.06120)
+* `BH76`, `BH76RC` (https://doi.org/10.1021/jp801805p)
+* `BHPERI`, `BHDIV10`, `PX13` (from https://doi.org/10.1021/acs.jpca.9b0461)
 
 The updated `UPU23` references were already present in the main GMTKN55
 repository.
 
 After applying the exclusions below, the benchmark contains 1495 retained
-reactions. Among these, 117 reference values differ from the original dataset:
+reactions. Among these, 251 reference values differ from the original dataset:
 
 | Subset    | Changed references |
 | --------- | -----------------: |
@@ -25,7 +29,15 @@ reactions. Among these, 117 reference values differ from the original dataset:
 | ISOL24    |                 21 |
 | UPU23     |                 23 |
 | S66       |                 66 |
-| **Total** |            **117** |
+| BH76      |                 23 |
+| BH76RC    |                 10 |
+| G21EA     |                 25 |
+| G21IP     |                 36 |
+| BHPERI    |                  6 |
+| PX13      |                  4 |
+| BHDIV10   |                  3 |
+| WATER27   |                 27 |
+| **Total** |            **251** |
 
 ## Spin-contamination exclusions
 
